@@ -52,17 +52,19 @@ const createImageSegmenter = async () => {
         baseOptions: {
             // ***Расскоментировать для выбора нужной модели (ниже представлены варианты)***
             // # https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter#selfie-model *(Selfie segmentation model)*
-            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite", // *SelfieSegmenter (square)* 
+            // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite", // *SelfieSegmenter (square)* 
             // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite", // *SelfieSegmenter (landscape)*
             
             // https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter#hair-model *(Hair segmentation model)*
             // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/hair_segmenter/float32/latest/hair_segmenter.tflite", // *HairSegmenter*
 
             // https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter#multiclass-model *(Multi-class selfie segmentation model)*
-            // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite", // *SelfieMulticlass (256 x 256)*
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite", // *SelfieMulticlass (256 x 256)*
+            // распознает в целом волосы, без пустых мест и обводка с запасом (отступом), точная
 
             // https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter#deeplab-v3 *(DeepLab-v3 model)*
             // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/deeplab_v3/float32/latest/deeplab_v3.tflite", // *DeepLab-V3*
+            // распознает в целом волосы, без пусты мест и обводка с запасом (отступом), неточная
             delegate: "GPU"
         },
         runningMode: runningMode,
