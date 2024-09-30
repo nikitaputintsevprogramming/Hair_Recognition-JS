@@ -1,0 +1,3 @@
+https://codepen.io/mediapipe-preview/pen/xxJNjbN - изначальный код
+https://ai.google.dev/edge/api/mediapipe/js/tasks-vision.imagesegmenter#imagesegmentersegment - документация
+https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter?hl=ru - руководство по мегментации изображений
