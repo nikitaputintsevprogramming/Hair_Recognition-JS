@@ -32,37 +32,37 @@ limitations under the License. -->
     <h2>Настройки сегментации</h2>
     <div class="setting-item">
       <label for="contourWidth">Ширина контура (px):</label>
-      <input type="range" id="contourWidth" min="1" max="50" value="8" oninput="updateValue('contourWidthValue', this.value)">
-      <span id="contourWidthValue">8 px</span>
+      <input type="range" id="contourWidth" min="1" max="50" value="5" oninput="updateValue('contourWidthValue', this.value)">
+      <span id="contourWidthValue"></span>
     </div>
 
     <div class="setting-item">
       <label for="contourColor">Цвет контура (RGB):</label>
-      <input type="color" id="contourColor" value="#ffcc00">
+      <input type="color" id="contourColor" value="#825A90">
       <button id="copyHairColor">Копировать цвет для волос</button>
     </div>
 
     <div class="setting-item">
       <label for="hairColor">Цвет волос (RGB):</label>
-      <input type="color" id="hairColor" value="#ffcc00"> <!-- Выбранный по умолчанию цвет для волос -->
+      <input type="color" id="hairColor" value="#825A90"> <!-- Выбранный по умолчанию цвет для волос -->
     </div>
 
     <div class="setting-item">
       <label for="contourOpacity">Прозрачность контура:</label>
-      <input type="range" id="contourOpacity" min="0" max="1" step="0.00001" value="0.003" oninput="updateValue('contourOpacityValue', this.value)">
-      <span id="contourOpacityValue">8 px</span>
+      <input type="range" id="contourOpacity" min="0" max="1" step="0.00001" value="0.003" oninput="updateValue('contourOpacityValue', this.value)" >
+      <span id="contourOpacityValue"></span>
     </div>
 
     <div class="setting-item">
       <label for="hairOpacity">Прозрачность волос:</label>
-      <input type="range" id="hairOpacity" min="0" max="1" step="0.01" value="0.4" oninput="updateValue('hairOpacityValue', this.value)">
-      <span id="hairOpacityValue">8 px</span>
+      <input type="range" id="hairOpacity" min="0" max="1" step="0.01" value="0.5" oninput="updateValue('hairOpacityValue', this.value)">
+      <span id="hairOpacityValue"></span>
     </div>
 
     <div class="setting-item">
-      <label for="blurRadius">Blur Radius</label>
+      <label for="blurRadius">Blur Radius <b>(in dev)</b></label>
       <input type="range" id="blurRadius" min="0" max="20" value="5" oninput="updateValue('blurRadiusValue', this.value)">
-      <span id="blurRadiusValue">8 px</span>
+      <span id="blurRadiusValue"></span>
     </div>
 
     <h3>Сегменты для отображения</h3>
