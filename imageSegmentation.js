@@ -206,7 +206,6 @@ function callback(result) {
     }
 
     // NEW START
-    // NEW START
     // Рисуем контур черного цвета вокруг области волос
     for (let i = 0; i < mask.length; i++) {
         if (mask[i] === 1) { // Область волос
