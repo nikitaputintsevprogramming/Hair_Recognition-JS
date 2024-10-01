@@ -32,7 +32,8 @@ limitations under the License. -->
     <h2>Настройки сегментации</h2>
     <div class="setting-item">
       <label for="contourWidth">Ширина контура (px):</label>
-      <input type="range" id="contourWidth" min="1" max="10" value="8">
+      <input type="range" id="contourWidth" min="1" max="50" value="8" oninput="updateValue('contourWidthValue', this.value)">
+      <span id="contourWidthValue">8 px</span>
     </div>
 
     <div class="setting-item">
@@ -48,17 +49,20 @@ limitations under the License. -->
 
     <div class="setting-item">
       <label for="contourOpacity">Прозрачность контура:</label>
-      <input type="range" id="contourOpacity" min="0" max="1" step="0.01" value="0.003">
+      <input type="range" id="contourOpacity" min="0" max="1" step="0.00001" value="0.003" oninput="updateValue('contourOpacityValue', this.value)">
+      <span id="contourOpacityValue">8 px</span>
     </div>
 
     <div class="setting-item">
       <label for="hairOpacity">Прозрачность волос:</label>
-      <input type="range" id="hairOpacity" min="0" max="1" step="0.01" value="0.4">
+      <input type="range" id="hairOpacity" min="0" max="1" step="0.01" value="0.4" oninput="updateValue('hairOpacityValue', this.value)">
+      <span id="hairOpacityValue">8 px</span>
     </div>
 
     <div class="setting-item">
       <label for="blurRadius">Blur Radius</label>
-      <input type="range" id="blurRadius" min="0" max="20" value="5">
+      <input type="range" id="blurRadius" min="0" max="20" value="5" oninput="updateValue('blurRadiusValue', this.value)">
+      <span id="blurRadiusValue">8 px</span>
     </div>
 
     <h3>Сегменты для отображения</h3>
@@ -150,7 +154,14 @@ limitations under the License. -->
   </section>
   <!-- partial -->
   <script type="module" src="./imageSegmentation.js"></script>
-
+  <script>
+    function updateValue(spanId, value) {
+      document.getElementById(spanId).textContent = value + (spanId === 'contourWidthValue' ? ' px' : '');
+      document.getElementById(spanId).textContent = value + (spanId === 'contourOpacityValue' ? ' px' : '');
+      document.getElementById(spanId).textContent = value + (spanId === 'hairOpacityValue' ? ' px' : '');
+      document.getElementById(spanId).textContent = value + (spanId === 'blurRadiusValue' ? ' px' : '');
+    }
+  </script>
 </body>
 
 </html>
