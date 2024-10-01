@@ -46,6 +46,22 @@ section {
   margin: 1em 0; /* Отступ сверху и снизу */
 }
 
+button {
+  margin-left: 10px; /* Отступ слева от цвета */
+  padding: 5px 10px; /* Внутренние отступы */
+  background-color: #007f8b; /* Цвет фона кнопки */
+  color: #fff; /* Цвет текста кнопки */
+  border: none; /* Убираем рамку */
+  border-radius: 4px; /* Скругленные углы */
+  cursor: pointer; /* Указатель для курсора */
+  transition: background-color 0.3s; /* Плавный переход цвета фона */
+}
+
+button:hover {
+  background-color: #005f6b; /* Темнее при наведении */
+}
+
+
 
 /* Image container */
 .videoView,

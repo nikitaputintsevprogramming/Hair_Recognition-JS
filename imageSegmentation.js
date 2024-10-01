@@ -96,6 +96,26 @@ async function handleClick(event) {
     imageSegmenter.segment(event.target, callback);
 }
 
+
+// Копировка цвета для волос с контура (взаимный цвет)
+document.getElementById('copyHairColor').addEventListener('click', function() {
+    const contourColorInput = document.getElementById('contourColor');
+    const hairColorInput = document.getElementById('hairColor');
+
+    const contourColor = contourColorInput.value; // Получаем выбранный цвет
+
+    // Копируем цвет в буфер обмена
+    navigator.clipboard.writeText(contourColor).then(() => {
+        alert('Цвет для волос скопирован: ' + contourColor);
+        hairColorInput.value = contourColor; // Устанавливаем цвет контура как цвет волос
+    }).catch(err => {
+        console.error('Ошибка при копировании цвета: ', err);
+    });
+});
+
+// ----------------------------
+
+
 let contourWidth;
 
 document.addEventListener("DOMContentLoaded", () => {
