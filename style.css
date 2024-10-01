@@ -42,6 +42,11 @@ section {
   opacity: 0.2;
 }
 
+.setting-item {
+  margin: 1em 0; /* Отступ сверху и снизу */
+}
+
+
 /* Image container */
 .videoView,
 .segmentOnClick {
