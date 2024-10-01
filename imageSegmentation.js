@@ -106,7 +106,7 @@ document.getElementById('copyHairColor').addEventListener('click', function() {
 
     // Копируем цвет в буфер обмена
     navigator.clipboard.writeText(contourColor).then(() => {
-        alert('Цвет для волос скопирован: ' + contourColor);
+        // alert('Цвет для волос скопирован: ' + contourColor);
         hairColorInput.value = contourColor; // Устанавливаем цвет контура как цвет волос
     }).catch(err => {
         console.error('Ошибка при копировании цвета: ', err);
@@ -147,6 +147,47 @@ function hexToRgb(hex) {
         b: bigint & 255,
     };
 }
+
+document.getElementById('blurContour').addEventListener('click', function() {
+    // Получаем контекст канваса
+    const cxt = canvasClick.getContext("2d");
+    const width = canvasClick.width;
+    const height = canvasClick.height;
+
+    // Получаем данные изображения с канваса
+    const imageData = cxt.getImageData(0, 0, width, height);
+    const data = imageData.data;
+
+    // Создаем новый массив для размытия
+    const blurredData = new Uint8ClampedArray(data.length);
+
+    // Применяем размытие (мягкое размытие по Гауссу, 3x3 ядро)
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            const i = (y * width + x) * 4;
+
+            // Получаем среднее значение RGB для пикселей в 3x3 области
+            let r = 0, g = 0, b = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const neighborIndex = ((y + dy) * width + (x + dx)) * 4;
+                    r += data[neighborIndex];
+                    g += data[neighborIndex + 1];
+                    b += data[neighborIndex + 2];
+                }
+            }
+            blurredData[i] = r / 9;       // Красный
+            blurredData[i + 1] = g / 9;   // Зеленый
+            blurredData[i + 2] = b / 9;   // Синий
+            blurredData[i + 3] = data[i + 3]; // Альфа
+        }
+    }
+
+    // Обновляем данные изображения на канвасе
+    const newImageData = new ImageData(blurredData, width, height);
+    cxt.putImageData(newImageData, 0, 0);
+});
+
 
 function callback(result) {
     const cxt = canvasClick.getContext("2d");
