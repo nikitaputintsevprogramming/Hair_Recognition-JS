@@ -34,6 +34,20 @@ section {
   transition: opacity 500ms ease-in-out;
 }
 
+.settings-block
+{
+  width: 30%;
+  border-style:groove;
+  border-radius: 5%;
+  /* margin: 6%; */
+  padding-left: 5%;
+  padding-right: 5%;
+  padding-bottom: 2%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto ;
+}
+
 .removed {
   display: none;
 }
