@@ -217,10 +217,18 @@ function callback(result) {
                         const ny = y + dh;
                         if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
                             const index = ny * width + nx;
-                            imageData[(index * 4)] = contourColor.r; // R
-                            imageData[(index * 4) + 1] = contourColor.g; // G
-                            imageData[(index * 4) + 2] = contourColor.b; // B
-                            imageData[(index * 4) + 3] = 255 * contourOpacity; // A с учетом прозрачности
+
+                            // Получаем исходный цвет в контуре
+                            const originalR = imageData[(index * 4)];     // Исходный красный
+                            const originalG = imageData[(index * 4) + 1]; // Исходный зеленый
+                            const originalB = imageData[(index * 4) + 2]; // Исходный синий
+                            const originalA = imageData[(index * 4) + 3]; // Исходная альфа
+
+                            // Смешиваем новый цвет с исходным цветом с учетом прозрачности
+                            imageData[(index * 4)] = (contourColor.r * contourOpacity + originalR * (1 - contourOpacity)); // R
+                            imageData[(index * 4) + 1] = (contourColor.g * contourOpacity + originalG * (1 - contourOpacity)); // G
+                            imageData[(index * 4) + 2] = (contourColor.b * contourOpacity + originalB * (1 - contourOpacity)); // B
+                            imageData[(index * 4) + 3] = Math.max(0, Math.min(255, originalA * (1 - contourOpacity) + (255 * contourOpacity))); // A
                         }
                     }
                 }
