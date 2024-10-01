@@ -28,13 +28,41 @@ limitations under the License. -->
   <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 
   <h1>Segmenting images using the MediaPipe Image Segmentation Task</h1>
+  <div class="settings-block">
+    <h2>Настройки сегментации</h2>
+    <label for="contourWidth">Ширина контура (px):</label>
+    <input type="range" id="contourWidth" min="1" max="10" value="1">
+    <label for="contourColor">Цвет контура (RGB):</label>
+    <input type="color" id="contourColor" value="#111111">
+    <label for="hairColor">Цвет волос (RGB):</label>
+    <input type="color" id="hairColor" value="#ffcc00"> <!-- Выбранный по умолчанию цвет для волос -->
 
-  <h2>Настройки контуров</h2>
-  <label for="contourWidth">Ширина контура (px):</label>
-  <input type="range" id="contourWidth" min="1" max="10" value="1">
+    <label for="contourOpacity">Прозрачность контура:</label>
+    <input type="range" id="contourOpacity" min="0" max="1" step="0.01" value="1">
+    <!-- Значение по умолчанию 1 (полная непрозрачность) -->
 
-  <label for="contourColor">Цвет контура (RGB):</label>
-  <input type="color" id="contourColor" value="#111111">
+    <label for="hairOpacity">Прозрачность волос:</label>
+    <input type="range" id="hairOpacity" min="0" max="1" step="0.01" value="1">
+    <!-- Значение по умолчанию 1 (полная непрозрачность) -->
+
+
+
+    <h3>Сегменты для отображения</h3>
+    <input type="checkbox" id="showBackground">
+    <label for="showBackground">Фон</label><br>
+    <input type="checkbox" id="showHair">
+    <label for="showHair">Волосы</label><br>
+    <input type="checkbox" id="showBodySkin">
+    <label for="showBodySkin">Кожа тела</label><br>
+    <input type="checkbox" id="showFaceSkin">
+    <label for="showFaceSkin">Кожа лица</label><br>
+    <input type="checkbox" id="showClothes">
+    <label for="showClothes">Одежда</label><br>
+    <input type="checkbox" id="showOthers"> <!-- checked -->
+    <label for="showOthers">Прочее (аксессуары)</label><br>
+  </div>
+
+
 
   <section id="demos" class="invisible">
     <h2>Demo: Segmenting Images</h2>

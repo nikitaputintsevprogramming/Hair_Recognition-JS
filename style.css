@@ -103,7 +103,6 @@ section {
 
 input[type="range"] {
   width: 100%;
-  max-width: 400px;
   height: 5px;
   -webkit-appearance: none;
   background: #007f8b;
