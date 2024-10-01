@@ -28,7 +28,7 @@ limitations under the License. -->
   <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 
   <h1>Segmenting images using the MediaPipe Image Segmentation Task</h1>
-  <div class="settings-block" >
+  <div class="settings-block">
     <h2>Настройки сегментации</h2>
     <div class="setting-item">
       <label for="contourWidth">Ширина контура (px):</label>
@@ -56,7 +56,10 @@ limitations under the License. -->
       <input type="range" id="hairOpacity" min="0" max="1" step="0.01" value="0.4">
     </div>
 
-
+    <div class="setting-item">
+      <label for="blurRadius">Blur Radius</label>
+      <input type="range" id="blurRadius" min="0" max="20" value="5">
+    </div>
 
     <h3>Сегменты для отображения</h3>
     <input type="checkbox" id="showBackground">
