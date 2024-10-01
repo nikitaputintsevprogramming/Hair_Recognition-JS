@@ -1,24 +1,6 @@
-// Copyright 2023 The MediaPipe Authors.
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//      http://www.apache.org/licenses/LICENSE-2.0
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 import { ImageSegmenter, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2";
-// Get DOM elements
-const video = document.getElementById("webcam");
-const canvasElement = document.getElementById("canvas");
-const canvasCtx = canvasElement.getContext("2d");
-const webcamPredictions = document.getElementById("webcamPredictions");
+
 const demosSection = document.getElementById("demos");
-let enableWebcamButton;
-let webcamRunning = false;
-const videoHeight = "360px";
-const videoWidth = "480px";
 let runningMode = "IMAGE";
 const resultWidthHeigth = 256;
 let imageSegmenter;
@@ -41,11 +23,12 @@ const legendColors = [
     [244, 200, 0, 255], // 14: Golden Yellow
     [127, 24, 13, 255], // 15: Deep Brown
     [147, 170, 0, 255], // 16: Olive Green
-    [89, 51, 21, 255], // 17: Dark Brown
+    [89, 51, 21, 255], // 17: Dark Brownвсего
     [241, 58, 19, 255], // 18: Bright Red
     [35, 44, 22, 255], // 19: Dark Olive
     [0, 161, 194, 255]  // 20: Vivid Blue
 ];
+
 const createImageSegmenter = async () => {
     const audio = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm");
     imageSegmenter = await ImageSegmenter.createFromOptions(audio, {
@@ -54,7 +37,7 @@ const createImageSegmenter = async () => {
             // # https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter#selfie-model *(Selfie segmentation model)*
             // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite", // *SelfieSegmenter (square)* 
             // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite", // *SelfieSegmenter (landscape)*
-            
+
             // https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter#hair-model *(Hair segmentation model)*
             // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/hair_segmenter/float32/latest/hair_segmenter.tflite", // *HairSegmenter*
 
@@ -87,7 +70,7 @@ for (let i = 0; i < imageContainers.length; i++) {
  */
 let canvasClick;
 async function handleClick(event) {
-    // Do not segmented if imageSegmenter hasn't loaded
+    // Do not segment if imageSegmenter hasn't loaded
     if (imageSegmenter === undefined) {
         return;
     }
@@ -95,11 +78,14 @@ async function handleClick(event) {
     canvasClick.classList.remove("removed");
     canvasClick.width = event.target.naturalWidth;
     canvasClick.height = event.target.naturalHeight;
-    const cxt = canvasClick.getContext("2d");
+
+    // Create context with willReadFrequently attribute
+    const cxt = canvasClick.getContext("2d", { willReadFrequently: true });
     cxt.clearRect(0, 0, canvasClick.width, canvasClick.height);
     cxt.drawImage(event.target, 0, 0, canvasClick.width, canvasClick.height);
     event.target.style.opacity = 0;
-    // if VIDEO mode is initialized, set runningMode to IMAGE
+
+    // If VIDEO mode is initialized, set runningMode to IMAGE
     if (runningMode === "VIDEO") {
         runningMode = "IMAGE";
         await imageSegmenter.setOptions({
@@ -109,6 +95,21 @@ async function handleClick(event) {
     // imageSegmenter.segment() when resolved will call the callback function.
     imageSegmenter.segment(event.target, callback);
 }
+
+let contourWidth;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const contourInput = document.getElementById("contourWidth");
+  contourWidth = contourInput.valueAsNumber; // Set initial value from slider input
+  console.log("Initial Contour Width:", contourWidth);
+
+  contourInput.addEventListener("input", function() {
+    contourWidth = contourInput.valueAsNumber;
+    console.log("Contour Width updated:", contourWidth);
+  });
+});
+
+
 function callback(result) {
     const cxt = canvasClick.getContext("2d");
     const { width, height } = result.categoryMask;
@@ -117,6 +118,13 @@ function callback(result) {
     canvasClick.height = height;
     let category = "";
     const mask = result.categoryMask.getAsUint8Array();
+
+    // NEW START
+    // Получаем значение ширины контура из ползунка
+
+    
+    // NEW END
+
     for (let i in mask) {
         if (mask[i] > 0) {
             category = labels[mask[i]];
@@ -127,92 +135,58 @@ function callback(result) {
         imageData[i * 4 + 2] = (legendColor[2] + imageData[i * 4 + 2]) / 2;
         imageData[i * 4 + 3] = (legendColor[3] + imageData[i * 4 + 3]) / 2;
     }
+
+    // NEW START
+// NEW START
+// Рисуем контур черного цвета вокруг области волос
+for (let i = 0; i < mask.length; i++) {
+    if (mask[i] === 1) { // Область волос
+        const x = i % width;
+        const y = Math.floor(i / width);
+        let isEdgePixel = false;
+
+        // Проверяем соседние пиксели
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const nx = x + dx;
+                const ny = y + dy;
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    const neighborIndex = ny * width + nx;
+                    if (mask[neighborIndex] !== 1) { // Если соседний пиксель не волосы
+                        isEdgePixel = true;
+                        break; // Выходим, если нашли хотя бы одного соседнего пикселя, который не является волосами
+                    }
+                }
+            }
+            if (isEdgePixel) break; // Прерываем внешний цикл, если уже нашли крайний пиксель
+        }
+
+        // Если пиксель является краевым, рисуем контур
+        if (isEdgePixel) {
+            for (let dw = -contourWidth; dw <= contourWidth; dw++) {
+                for (let dh = -contourWidth; dh <= contourWidth; dh++) {
+                    const nx = x + dw;
+                    const ny = y + dh;
+                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                        const index = ny * width + nx;
+                        imageData[(index * 4)] = 0; // R
+                        imageData[(index * 4) + 1] = 0; // G
+                        imageData[(index * 4) + 2] = 0; // B
+                        imageData[(index * 4) + 3] = 255; // A
+                    }
+                }
+            }
+        }
+    }
+}
+// NEW END
+
+
+
     const uint8Array = new Uint8ClampedArray(imageData.buffer);
     const dataNew = new ImageData(uint8Array, width, height);
     cxt.putImageData(dataNew, 0, 0);
     const p = event.target.parentNode.getElementsByClassName("classification")[0];
     p.classList.remove("removed");
     p.innerText = "Category: " + category;
-}
-function callbackForVideo(result) {
-    let imageData = canvasCtx.getImageData(0, 0, video.videoWidth, video.videoHeight).data;
-    const mask = result.categoryMask.getAsFloat32Array();
-    let j = 0;
-    for (let i = 0; i < mask.length; ++i) {
-        const maskVal = Math.round(mask[i] * 255.0);
-        const legendColor = legendColors[maskVal % legendColors.length];
-        imageData[j] = (legendColor[0] + imageData[j]) / 2;
-        imageData[j + 1] = (legendColor[1] + imageData[j + 1]) / 2;
-        imageData[j + 2] = (legendColor[2] + imageData[j + 2]) / 2;
-        imageData[j + 3] = (legendColor[3] + imageData[j + 3]) / 2;
-        j += 4;
-    }
-    const uint8Array = new Uint8ClampedArray(imageData.buffer);
-    const dataNew = new ImageData(uint8Array, video.videoWidth, video.videoHeight);
-    canvasCtx.putImageData(dataNew, 0, 0);
-    if (webcamRunning === true) {
-        window.requestAnimationFrame(predictWebcam);
-    }
-}
-/********************************************************************
-// Demo 2: Continuously grab image from webcam stream and segmented it.
-********************************************************************/
-// Check if webcam access is supported.
-function hasGetUserMedia() {
-    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-}
-// Get segmentation from the webcam
-let lastWebcamTime = -1;
-async function predictWebcam() {
-    if (video.currentTime === lastWebcamTime) {
-        if (webcamRunning === true) {
-            window.requestAnimationFrame(predictWebcam);
-        }
-        return;
-    }
-    lastWebcamTime = video.currentTime;
-    canvasCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-    // Do not segmented if imageSegmenter hasn't loaded
-    if (imageSegmenter === undefined) {
-        return;
-    }
-    // if image mode is initialized, create a new segmented with video runningMode
-    if (runningMode === "IMAGE") {
-        runningMode = "VIDEO";
-        await imageSegmenter.setOptions({
-            runningMode: runningMode
-        });
-    }
-    let startTimeMs = performance.now();
-    // Start segmenting the stream.
-    imageSegmenter.segmentForVideo(video, startTimeMs, callbackForVideo);
-}
-// Enable the live webcam view and start imageSegmentation.
-async function enableCam(event) {
-    if (imageSegmenter === undefined) {
-        return;
-    }
-    if (webcamRunning === true) {
-        webcamRunning = false;
-        enableWebcamButton.innerText = "ENABLE SEGMENTATION";
-    }
-    else {
-        webcamRunning = true;
-        enableWebcamButton.innerText = "DISABLE SEGMENTATION";
-    }
-    // getUsermedia parameters.
-    const constraints = {
-        video: true
-    };
-    // Activate the webcam stream.
-    video.srcObject = await navigator.mediaDevices.getUserMedia(constraints);
-    video.addEventListener("loadeddata", predictWebcam);
-}
-// If webcam supported, add event listener to button.
-if (hasGetUserMedia()) {
-    enableWebcamButton = document.getElementById("webcamButton");
-    enableWebcamButton.addEventListener("click", enableCam);
-}
-else {
-    console.warn("getUserMedia() is not supported by your browser");
 }

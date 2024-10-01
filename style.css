@@ -1,45 +1,32 @@
-/* Copyright 2023 The MediaPipe Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License. */
-
 @use "@material";
 body {
-  font-family: roboto;
+  font-family: 'Roboto', sans-serif;
   margin: 2em;
   color: #3d3d3d;
   --mdc-theme-primary: #007f8b;
   --mdc-theme-on-primary: #f1f3f4;
+  background-color: #f7f7f7;
 }
 
-h1 {
+h1, h2 {
   color: #007f8b;
+  text-align: center;
 }
 
 h2 {
-  clear: both;
+  margin-top: 2em;
 }
 
 em {
   font-weight: bold;
 }
 
-video {
-  clear: both;
+video, canvas {
   display: block;
-}
-canvas {
-  clear: both;
-  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
 }
 
 section {
@@ -55,13 +42,38 @@ section {
   opacity: 0.2;
 }
 
+/* Image container */
 .videoView,
 .segmentOnClick {
   position: relative;
   float: left;
-  width: 48%;
-  margin: 2% 1%;
+  width: 100%;
+  margin: 1.5em 0;
   cursor: pointer;
+  display: flex;
+  flex-direction: column; /* Make the layout vertical */
+  justify-content: center;
+  align-items: center;
+}
+
+.segmentOnClick img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.segmentOnClick img:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.segmentOnClick canvas {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
 }
 
 .segmentOnClick p {
@@ -70,21 +82,79 @@ section {
   color: #fff;
   z-index: 2;
   font-size: 12px;
-  margin: 0;
-}
-
-
-.segmentOnClick {
-  z-index: 0;
-}
-
-.segmentOnClick canvas {
-  position: absolute;
-  top: 0px;
-  bottom: 0px;
+  margin-top: 10px; /* Add margin to create space above the caption */
+  text-align: center;
   width: 100%;
+  box-sizing: border-box; /* Ensures padding doesn't exceed element width */
 }
 
-.segmentOnClick img {
+/* Slider Styles */
+.slider-wrapper {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.slider-label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #3d3d3d;
+}
+
+input[type="range"] {
   width: 100%;
+  max-width: 400px;
+  height: 5px;
+  -webkit-appearance: none;
+  background: #007f8b;
+  border-radius: 5px;
+  outline: none;
+  margin: 0 auto;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background: #f1f3f4;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #007f8b;
+}
+
+input[type="color"] {
+  width: 30px;
+  height: 30px;
+  border-radius: 1%;
+  border: none;
+  margin-left: 10px;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+input[type="color"]:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Grid Layout */
+@media (min-width: 768px) {
+  .segmentOnClick {
+    width: 48%;
+    margin: 1%;
+  }
+
+  .slider-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .segmentOnClick {
+    width: 30%;
+    margin: 1.5%;
+  }
 }
