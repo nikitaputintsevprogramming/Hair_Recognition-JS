@@ -206,6 +206,7 @@ function applyBlur(imageData, width, height, mask, segmentValue, kernelSize) {
 }
 
 
+
 let blurIntense;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -318,17 +319,22 @@ function callback(result) {
                             const originalA = imageData[(index * 4) + 3]; // Исходная альфа
 
                             // Смешиваем новый цвет с исходным цветом с учетом прозрачности
-                            imageData[(index * 4)] = (contourColor.r * contourOpacity + originalR * (1 - contourOpacity)); // R
-                            imageData[(index * 4) + 1] = (contourColor.g * contourOpacity + originalG * (1 - contourOpacity)); // G
-                            imageData[(index * 4) + 2] = (contourColor.b * contourOpacity + originalB * (1 - contourOpacity)); // B
-                            imageData[(index * 4) + 3] = Math.max(0, Math.min(255, originalA * (1 - contourOpacity) + (255 * contourOpacity))); // A
-                        }
-                    }
-                }
-            }
-        }
-    }
-    // NEW END
+                                      // Mixing the new contour color with the original color considering the opacity
+                                      imageData[(index * 4)] = (contourColor.r * contourOpacity + originalR * (1 - contourOpacity)); // Red channel
+                                      imageData[(index * 4) + 1] = (contourColor.g * contourOpacity + originalG * (1 - contourOpacity)); // Green channel
+                                      imageData[(index * 4) + 2] = (contourColor.b * contourOpacity + originalB * (1 - contourOpacity)); // Blue channel
+                                      imageData[(index * 4) + 3] = (255 * contourOpacity + originalA * (1 - contourOpacity)); // Alpha channel
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          
+              // Draw the updated image data back to the canvas
+              const updatedImageData = new ImageData(new Uint8ClampedArray(imageData), width, height);
+              cxt.putImageData(updatedImageData, 0, 0);
+          
 
     // После того, как мы нашли и раскрасили контур волос нужно заблюрить эту область пикселей
 
