@@ -98,7 +98,7 @@ async function handleClick(event) {
 
 
 // Копировка цвета для волос с контура (взаимный цвет)
-document.getElementById('copyHairColor').addEventListener('click', function() {
+document.getElementById('copyHairColor').addEventListener('click', function () {
     const contourColorInput = document.getElementById('contourColor');
     const hairColorInput = document.getElementById('hairColor');
 
@@ -146,6 +146,55 @@ function hexToRgb(hex) {
         g: (bigint >> 8) & 255,
         b: bigint & 255,
     };
+}
+
+function applyBlur(imageData, width, height, mask, segmentValue) {
+    const blurredImageData = new Uint8ClampedArray(imageData.length);
+    const kernelSize = 5; // Размер фильтра (например, 5x5)
+    const kernelOffset = Math.floor(kernelSize / 2);
+
+    // Применяем размытие только для сегмента, который равен segmentValue (например, область волос)
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+
+            // Проверяем, если пиксель относится к области волос
+            if (mask[y * width + x] === segmentValue) {
+                let r = 0, g = 0, b = 0, a = 0;
+                let count = 0;
+
+                // Применяем размытие в окрестностях пикселя
+                for (let ky = -kernelOffset; ky <= kernelOffset; ky++) {
+                    for (let kx = -kernelOffset; kx <= kernelOffset; kx++) {
+                        const nx = x + kx;
+                        const ny = y + ky;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const ni = (ny * width + nx) * 4;
+                            r += imageData[ni];
+                            g += imageData[ni + 1];
+                            b += imageData[ni + 2];
+                            a += imageData[ni + 3];
+                            count++;
+                        }
+                    }
+                }
+
+                // Среднее значение по окрестности
+                blurredImageData[i] = r / count;
+                blurredImageData[i + 1] = g / count;
+                blurredImageData[i + 2] = b / count;
+                blurredImageData[i + 3] = a / count;
+            } else {
+                // Если пиксель не относится к области волос, оставляем его без изменений
+                blurredImageData[i] = imageData[i];
+                blurredImageData[i + 1] = imageData[i + 1];
+                blurredImageData[i + 2] = imageData[i + 2];
+                blurredImageData[i + 3] = imageData[i + 3];
+            }
+        }
+    }
+
+    return blurredImageData;
 }
 
 function callback(result) {
@@ -277,11 +326,17 @@ function callback(result) {
         }
     }
 
-
-    const uint8Array = new Uint8ClampedArray(imageData.buffer);
+    // Применяем размытие на области волос
+    const blurredImageData = applyBlur(imageData, width, height, mask, 1);
+    const uint8Array = new Uint8ClampedArray(blurredImageData.buffer);
     const dataNew = new ImageData(uint8Array, width, height);
     cxt.putImageData(dataNew, 0, 0);
-    const p = event.target.parentNode.getElementsByClassName("classification")[0];
-    p.classList.remove("removed");
-    p.innerText = "Category: " + category;
+
+
+    // const uint8Array = new Uint8ClampedArray(imageData.buffer);
+    // const dataNew = new ImageData(uint8Array, width, height);
+    // cxt.putImageData(dataNew, 0, 0);
+    // const p = event.target.parentNode.getElementsByClassName("classification")[0];
+    // p.classList.remove("removed");
+    // p.innerText = "Category: " + category;
 }
