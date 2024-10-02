@@ -150,15 +150,14 @@ function hexToRgb(hex) {
 
 function applyBlur(imageData, width, height, mask, segmentValue, kernelSize) {
     const blurredImageData = new Uint8ClampedArray(imageData.length);
-    // const kernelSize = 5; // Размер фильтра (например, 5x5)
     const kernelOffset = Math.floor(kernelSize / 2);
 
-    // Применяем размытие только для сегмента, который равен segmentValue
+    // Применяем размытие только для сегмента, который не равен segmentValue
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
 
-            // Проверяем, если пиксель относится к области волос
+            // Проверяем, если пиксель не относится к области волос
             if (mask[y * width + x] != segmentValue) {
                 let r = 0, g = 0, b = 0, a = 0;
                 let count = 0;
@@ -185,9 +184,16 @@ function applyBlur(imageData, width, height, mask, segmentValue, kernelSize) {
                 blurredImageData[i] = count > 0 ? r / count : imageData[i];
                 blurredImageData[i + 1] = count > 0 ? g / count : imageData[i + 1];
                 blurredImageData[i + 2] = count > 0 ? b / count : imageData[i + 2];
-                blurredImageData[i + 3] = imageData[i + 3]; // Альфа сохраняется
+                // blurredImageData[i + 3] = imageData[i + 3]; // Альфа сохраняется
+                // Альфа-канал сохраняется в зависимости от количества найденных пикселей
+                blurredImageData[i + 3] = count > 0 ? a / count : imageData[i + 3]; // сохраняем средний альфа
+                // blurredImageData[i] = imageData[i];
+                // blurredImageData[i + 1] = imageData[i + 1];
+                // blurredImageData[i + 2] = imageData[i + 2];
+                // blurredImageData[i + 3] = imageData[i + 3];
+                
             } else {
-                // Если пиксель не относится к области волос, оставляем его без изменений
+                // Если пиксель относится к области волос, оставляем его без изменений
                 blurredImageData[i] = imageData[i];
                 blurredImageData[i + 1] = imageData[i + 1];
                 blurredImageData[i + 2] = imageData[i + 2];
@@ -198,6 +204,7 @@ function applyBlur(imageData, width, height, mask, segmentValue, kernelSize) {
 
     return blurredImageData;
 }
+
 
 let blurIntense;
 
