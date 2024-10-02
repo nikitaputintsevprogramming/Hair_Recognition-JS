@@ -153,13 +153,13 @@ function applyBlur(imageData, width, height, mask, segmentValue) {
     const kernelSize = 5; // Размер фильтра (например, 5x5)
     const kernelOffset = Math.floor(kernelSize / 2);
 
-    // Применяем размытие только для сегмента, который равен segmentValue (например, область волос)
+    // Применяем размытие только для сегмента, который равен segmentValue
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
 
             // Проверяем, если пиксель относится к области волос
-            if (mask[y * width + x] === segmentValue) {
+            if (mask[y * width + x] != segmentValue) {
                 let r = 0, g = 0, b = 0, a = 0;
                 let count = 0;
 
@@ -170,20 +170,22 @@ function applyBlur(imageData, width, height, mask, segmentValue) {
                         const ny = y + ky;
                         if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
                             const ni = (ny * width + nx) * 4;
-                            r += imageData[ni];
-                            g += imageData[ni + 1];
-                            b += imageData[ni + 2];
-                            a += imageData[ni + 3];
-                            count++;
+                            if (mask[ny * width + nx] === segmentValue) { // Проверяем, что это также волос
+                                r += imageData[ni];
+                                g += imageData[ni + 1];
+                                b += imageData[ni + 2];
+                                a += imageData[ni + 3];
+                                count++;
+                            }
                         }
                     }
                 }
 
                 // Среднее значение по окрестности
-                blurredImageData[i] = r / count;
-                blurredImageData[i + 1] = g / count;
-                blurredImageData[i + 2] = b / count;
-                blurredImageData[i + 3] = a / count;
+                blurredImageData[i] = count > 0 ? r / count : imageData[i];
+                blurredImageData[i + 1] = count > 0 ? g / count : imageData[i + 1];
+                blurredImageData[i + 2] = count > 0 ? b / count : imageData[i + 2];
+                blurredImageData[i + 3] = imageData[i + 3]; // Альфа сохраняется
             } else {
                 // Если пиксель не относится к области волос, оставляем его без изменений
                 blurredImageData[i] = imageData[i];
@@ -196,6 +198,7 @@ function applyBlur(imageData, width, height, mask, segmentValue) {
 
     return blurredImageData;
 }
+
 
 function callback(result) {
     const cxt = canvasClick.getContext("2d");
