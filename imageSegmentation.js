@@ -148,9 +148,9 @@ function hexToRgb(hex) {
     };
 }
 
-function applyBlur(imageData, width, height, mask, segmentValue) {
+function applyBlur(imageData, width, height, mask, segmentValue, kernelSize) {
     const blurredImageData = new Uint8ClampedArray(imageData.length);
-    const kernelSize = 5; // Размер фильтра (например, 5x5)
+    // const kernelSize = 5; // Размер фильтра (например, 5x5)
     const kernelOffset = Math.floor(kernelSize / 2);
 
     // Применяем размытие только для сегмента, который равен segmentValue
@@ -198,6 +198,21 @@ function applyBlur(imageData, width, height, mask, segmentValue) {
 
     return blurredImageData;
 }
+
+let blurIntense;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const blurIntenseInput = document.getElementById("blurIntensity");
+    blurIntense = blurIntenseInput.valueAsNumber; // Установка начального значения из ползунка
+    console.log("Initial Blur Intensity:", blurIntense); // Исправлено имя переменной
+
+    // Добавляем обработчик события для изменения интенсивности размытия
+    blurIntenseInput.addEventListener("input", function () {
+        blurIntense = blurIntenseInput.valueAsNumber; // Обновляем значение
+        console.log("Blur Intensity updated:", blurIntense);
+    });
+});
+
 
 
 function callback(result) {
@@ -328,9 +343,10 @@ function callback(result) {
             imageData[index + 3] = Math.max(0, Math.min(255, originalA * (1 - hairOpacity) + (255 * hairOpacity))); // A
         }
     }
-
+    const blurIntensity = blurIntense;
+    console.log("blurIntensity: " ,blurIntensity);
     // Применяем размытие на области волос
-    const blurredImageData = applyBlur(imageData, width, height, mask, 1);
+    const blurredImageData = applyBlur(imageData, width, height, mask, 1, blurIntensity);
     const uint8Array = new Uint8ClampedArray(blurredImageData.buffer);
     const dataNew = new ImageData(uint8Array, width, height);
     cxt.putImageData(dataNew, 0, 0);
