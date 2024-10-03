@@ -149,14 +149,14 @@ function hexToRgb(hex) {
 }
 
 // contourWidthBlurValueInHair и contourWidthBlurEdges - ?
-function applyBlur(imageData, width, height, mask, segmentValue, sigmaKoef, contourWidthBlurEdges, contourWidthBlurValueInHair, contourColor, contourOpacity) {
+function applyBlur(imageData, width, height, mask, segmentValue, sigmaKoef, contourWidthBlurValueInHair, contourWidthBlurEdges) { // , contourColor, contourOpacity (contourWidthBlurEdges лучше не трогать, пока не понятно в консоли пишет = undefined)
     const blurredImageData = new Uint8ClampedArray(imageData.length);
     const kernelSize = Math.ceil(sigmaKoef * 6); // Размер ядра (обычно 6 * sigmaKoef)
     const kernelOffset = Math.floor(kernelSize / 2);
 
     // Генерация гауссового ядра
     const gaussianKernel = [];
-    const twosigmaKoefSq = 100 * sigmaKoef * sigmaKoef; // чувствительность
+    const twosigmaKoefSq = 10 * sigmaKoef * sigmaKoef; // чувствительность
     let sum = 0;
 
     // Создаем ядро
@@ -181,7 +181,7 @@ function applyBlur(imageData, width, height, mask, segmentValue, sigmaKoef, cont
             // Проверяем, является ли пиксель внутри области волос
             if (mask[y * width + x] !== segmentValue) {
                 let isEdgePixel = false;
-                let contourWidthBlurValueInHair = 20;
+                // let contourWidthBlurValueInHair = 20;
                 // Проверка соседних пикселей на принадлежность к области волос
                 for (let dw = -contourWidthBlurValueInHair; dw <= contourWidthBlurValueInHair; dw++) { // ширина 20 хорошо для contourWidth
                     for (let dh = -contourWidthBlurValueInHair; dh <= contourWidthBlurValueInHair; dh++) { // высота 20 хорошо для contourWidth
@@ -245,6 +245,7 @@ function applyBlur(imageData, width, height, mask, segmentValue, sigmaKoef, cont
         for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
 
+            
             // Если пиксель является краевым, рисуем контур
             if (mask[y * width + x] !== segmentValue) {
                 for (let dw = -contourWidthBlurEdges; dw <= contourWidthBlurEdges; dw++) {
@@ -441,8 +442,9 @@ function callback(result) {
     const blurIntensity = blurIntense;
     console.log("blurIntensity: ", blurIntensity);
     // Применяем размытие на области волос
-    const blurredImageData = applyBlur(imageData, width, height, mask, 1, blurIntensity); // stock
+    const blurredImageData = applyBlur(imageData, width, height, mask, 1, blurIntense, blurWidthListen); // stock
     // const blurredImageData = applyBlur(imageData, width, height, mask, 1, blurIntensity, blurWidthListen);
+    // imageData, width, height, mask, segmentValue, sigmaKoef, contourWidthBlurEdges, contourWidthBlurValueInHair)
     const uint8Array = new Uint8ClampedArray(blurredImageData.buffer);
     const dataNew = new ImageData(uint8Array, width, height);
     cxt.putImageData(dataNew, 0, 0);
