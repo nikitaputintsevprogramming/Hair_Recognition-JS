@@ -328,7 +328,6 @@ function callback(result) {
     const showClothes = document.getElementById("showClothes").checked;
     const showOthers = document.getElementById("showOthers").checked;
 
-
     // NEW END
 
     // for (let i in mask) {
