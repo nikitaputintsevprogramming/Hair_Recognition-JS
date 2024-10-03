@@ -185,132 +185,133 @@ function hexToRgb(hex) {
 // ------------ blur for test end ------------
 
 // ------------ старый метод когда блюр внутрь области волос уходит (начало) ------------
+// подумать на счет sigma и intensity (проверить) !!!
 // для ширины кону+тар блюра нужно добаввить расчет от размера изображения 
-function applyBlur(imageData, width, height, mask, segmentValue, sigma, contourWidth, contourColor, contourOpacity) {
-    const blurredImageData = new Uint8ClampedArray(imageData.length);
-    const kernelSize = Math.ceil(sigma * 6); // Размер ядра (обычно 6 * sigma)
-    const kernelOffset = Math.floor(kernelSize / 2);
+// function applyBlur(imageData, width, height, mask, segmentValue, sigma, contourWidth, contourColor, contourOpacity, intensity) {
+//     const blurredImageData = new Uint8ClampedArray(imageData.length);
+//     const kernelSize = Math.ceil(sigma * 6); // Размер ядра (обычно 6 * sigma)
+//     const kernelOffset = Math.floor(kernelSize / 2);
 
-    // Генерация гауссового ядра
-    const gaussianKernel = [];
-    const twoSigmaSq = 50 * sigma * sigma; // чувствительность
-    let sum = 0;
+//     // Генерация гауссового ядра
+//     const gaussianKernel = [];
+//     const twoSigmaSq = intensity * sigma * sigma; // чувствительность
+//     let sum = 0;
 
-    // Создаем ядро
-    for (let y = -kernelOffset; y <= kernelOffset; y++) {
-        for (let x = -kernelOffset; x <= kernelOffset; x++) {
-            const weight = Math.exp(-(x * x + y * y) / twoSigmaSq);
-            gaussianKernel.push(weight);
-            sum += weight;
-        }
-    }
+//     // Создаем ядро
+//     for (let y = -kernelOffset; y <= kernelOffset; y++) {
+//         for (let x = -kernelOffset; x <= kernelOffset; x++) {
+//             const weight = Math.exp(-(x * x + y * y) / twoSigmaSq);
+//             gaussianKernel.push(weight);
+//             sum += weight;
+//         }
+//     }
 
-    // Нормализация ядра
-    for (let i = 0; i < gaussianKernel.length; i++) {
-        gaussianKernel[i] /= sum;
-    }
+//     // Нормализация ядра
+//     for (let i = 0; i < gaussianKernel.length; i++) {
+//         gaussianKernel[i] /= sum;
+//     }
 
-    // Применение размытия
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const i = (y * width + x) * 4;
+//     // Применение размытия
+//     for (let y = 0; y < height; y++) {
+//         for (let x = 0; x < width; x++) {
+//             const i = (y * width + x) * 4;
 
-            // Проверяем, является ли пиксель краевым (находится в пределах маски)
-            if (mask[y * width + x] == segmentValue) {
-                let isEdgePixel = false;
+//             // Проверяем, является ли пиксель краевым (находится в пределах маски)
+//             if (mask[y * width + x] == segmentValue) {
+//                 let isEdgePixel = false;
 
-                // Проверка соседних пикселей на принадлежность к контурной области
-                for (let dw = -10; dw <= 10; dw++) { // ширина
-                    for (let dh = -10; dh <= 10; dh++) { // ширина
-                        const nx = x + dw;
-                        const ny = y + dh;
-                        if (nx >= 0 && nx < width && ny >= 0 && ny < height && (mask[ny * width + nx] !== segmentValue)) {
-                            isEdgePixel = true; // Пиксель является краевым
-                            break;
-                        }
-                    }
-                    if (isEdgePixel) break;
-                }
+//                 // Проверка соседних пикселей на принадлежность к контурной области
+//                 for (let dw = -contourWidth; dw <= contourWidth; dw++) { // ширина
+//                     for (let dh = -contourWidth; dh <= contourWidth; dh++) { // ширина
+//                         const nx = x + dw;
+//                         const ny = y + dh;
+//                         if (nx >= 0 && nx < width && ny >= 0 && ny < height && (mask[ny * width + nx] !== segmentValue)) {
+//                             isEdgePixel = true; // Пиксель является краевым
+//                             break;
+//                         }
+//                     }
+//                     if (isEdgePixel) break;
+//                 }
 
-                // Если пиксель является краевым, применяем размытие
-                if (isEdgePixel) {
-                    let r = 0, g = 0, b = 0;
-                    let kernelIndex = 0;
+//                 // Если пиксель является краевым, применяем размытие
+//                 if (isEdgePixel) {
+//                     let r = 0, g = 0, b = 0;
+//                     let kernelIndex = 0;
 
-                    // Применяем ядро к каждому пикселю в окрестностях
-                    for (let ky = -kernelOffset; ky <= kernelOffset; ky++) {
-                        for (let kx = -kernelOffset; kx <= kernelOffset; kx++) {
-                            const nx = x + kx;
-                            const ny = y + ky;
-                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                                const ni = (ny * width + nx) * 4;
-                                const weight = gaussianKernel[kernelIndex];
+//                     // Применяем ядро к каждому пикселю в окрестностях
+//                     for (let ky = -kernelOffset; ky <= kernelOffset; ky++) {
+//                         for (let kx = -kernelOffset; kx <= kernelOffset; kx++) {
+//                             const nx = x + kx;
+//                             const ny = y + ky;
+//                             if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+//                                 const ni = (ny * width + nx) * 4;
+//                                 const weight = gaussianKernel[kernelIndex];
 
-                                // Суммируем цвет с учетом веса
-                                r += imageData[ni] * weight;
-                                g += imageData[ni + 1] * weight;
-                                b += imageData[ni + 2] * weight;
-                            }
-                            kernelIndex++;
-                        }
-                    }
+//                                 // Суммируем цвет с учетом веса
+//                                 r += imageData[ni] * weight;
+//                                 g += imageData[ni + 1] * weight;
+//                                 b += imageData[ni + 2] * weight;
+//                             }
+//                             kernelIndex++;
+//                         }
+//                     }
 
-                    // Убедимся, что результат размытия остаётся в диапазоне 0-255
-                    blurredImageData[i] = Math.min(255, Math.max(0, r));
-                    blurredImageData[i + 1] = Math.min(255, Math.max(0, g));
-                    blurredImageData[i + 2] = Math.min(255, Math.max(0, b));
-                    blurredImageData[i + 3] = imageData[i + 3]; // Сохраняем альфа-канал
-                } else {
-                    // Если не краевой, просто копируем цвет
-                    blurredImageData[i] = imageData[i];         // R
-                    blurredImageData[i + 1] = imageData[i + 1]; // G
-                    blurredImageData[i + 2] = imageData[i + 2]; // B
-                    blurredImageData[i + 3] = imageData[i + 3]; // A
-                }
-            } else {
-                // Если не принадлежит сегменту, просто копируем цвет
-                blurredImageData[i] = imageData[i];         // R
-                blurredImageData[i + 1] = imageData[i + 1]; // G
-                blurredImageData[i + 2] = imageData[i + 2]; // B
-                blurredImageData[i + 3] = imageData[i + 3]; // A
-            }
-        }
-    }
+//                     // Убедимся, что результат размытия остаётся в диапазоне 0-255
+//                     blurredImageData[i] = Math.min(255, Math.max(0, r));
+//                     blurredImageData[i + 1] = Math.min(255, Math.max(0, g));
+//                     blurredImageData[i + 2] = Math.min(255, Math.max(0, b));
+//                     blurredImageData[i + 3] = imageData[i + 3]; // Сохраняем альфа-канал
+//                 } else {
+//                     // Если не краевой, просто копируем цвет
+//                     blurredImageData[i] = imageData[i];         // R
+//                     blurredImageData[i + 1] = imageData[i + 1]; // G
+//                     blurredImageData[i + 2] = imageData[i + 2]; // B
+//                     blurredImageData[i + 3] = imageData[i + 3]; // A
+//                 }
+//             } else {
+//                 // Если не принадлежит сегменту, просто копируем цвет
+//                 blurredImageData[i] = imageData[i];         // R
+//                 blurredImageData[i + 1] = imageData[i + 1]; // G
+//                 blurredImageData[i + 2] = imageData[i + 2]; // B
+//                 blurredImageData[i + 3] = imageData[i + 3]; // A
+//             }
+//         }
+//     }
 
-    // Наносим контур на края
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const i = (y * width + x) * 4;
+//     // Наносим контур на края
+//     for (let y = 0; y < height; y++) {
+//         for (let x = 0; x < width; x++) {
+//             const i = (y * width + x) * 4;
 
-            // Если пиксель является краевым, рисуем контур
-            if (mask[y * width + x] === segmentValue) {
-                for (let dw = -contourWidth; dw <= contourWidth; dw++) {
-                    for (let dh = -contourWidth; dh <= contourWidth; dh++) {
-                        const nx = x + dw;
-                        const ny = y + dh;
-                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                            const index = (ny * width + nx) * 4;
+//             // Если пиксель является краевым, рисуем контур
+//             if (mask[y * width + x] === segmentValue) {
+//                 for (let dw = -contourWidth; dw <= contourWidth; dw++) {
+//                     for (let dh = -contourWidth; dh <= contourWidth; dh++) {
+//                         const nx = x + dw;
+//                         const ny = y + dh;
+//                         if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+//                             const index = (ny * width + nx) * 4;
 
-                            // Получаем исходный цвет в контуре
-                            const originalR = blurredImageData[index];     // Исходный красный
-                            const originalG = blurredImageData[index + 1]; // Исходный зеленый
-                            const originalB = blurredImageData[index + 2]; // Исходный синий
-                            const originalA = blurredImageData[index + 3]; // Исходная альфа
+//                             // Получаем исходный цвет в контуре
+//                             const originalR = blurredImageData[index];     // Исходный красный
+//                             const originalG = blurredImageData[index + 1]; // Исходный зеленый
+//                             const originalB = blurredImageData[index + 2]; // Исходный синий
+//                             const originalA = blurredImageData[index + 3]; // Исходная альфа
 
-                            // Смешиваем новый цвет с исходным цветом с учетом прозрачности
-                            blurredImageData[index] = (contourColor.r * contourOpacity + originalR * (1 - contourOpacity)); // Red channel
-                            blurredImageData[index + 1] = (contourColor.g * contourOpacity + originalG * (1 - contourOpacity)); // Green channel
-                            blurredImageData[index + 2] = (contourColor.b * contourOpacity + originalB * (1 - contourOpacity)); // Blue channel
-                            blurredImageData[index + 3] = (255 * contourOpacity + originalA * (1 - contourOpacity)); // Alpha channel
-                        }
-                    }
-                }
-            }
-        }
-    }
+//                             // Смешиваем новый цвет с исходным цветом с учетом прозрачности
+//                             blurredImageData[index] = (contourColor.r * contourOpacity + originalR * (1 - contourOpacity)); // Red channel
+//                             blurredImageData[index + 1] = (contourColor.g * contourOpacity + originalG * (1 - contourOpacity)); // Green channel
+//                             blurredImageData[index + 2] = (contourColor.b * contourOpacity + originalB * (1 - contourOpacity)); // Blue channel
+//                             blurredImageData[index + 3] = (255 * contourOpacity + originalA * (1 - contourOpacity)); // Alpha channel
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
 
-    return blurredImageData;
-}
+//     return blurredImageData;
+// }
 // ------------ старый метод когда блюр внутрь области волос уходит (конец) ------------
 
 function applyBlur(imageData, width, height, mask, segmentValue, sigma, contourWidth, contourColor, contourOpacity) {
@@ -456,6 +457,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+let blurWidthListen;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const blurWidthInput = document.getElementById("blurIntensity");
+    blurWidthListen = blurWidthInput.valueAsNumber; // Установка начального значения из ползунка
+    console.log("Initial Blur Intensity:", blurWidthListen); // Исправлено имя переменной
+
+    // Добавляем обработчик события для изменения интенсивности размытия
+    blurWidthInput.addEventListener("input", function () {
+        blurWidthListen = blurWidthInput.valueAsNumber; // Обновляем значение
+        console.log("Blur Intensity updated:", blurWidthListen);
+    });
+});
+
 
 
 function callback(result) {
@@ -592,9 +607,10 @@ function callback(result) {
         }
     }
     const blurIntensity = blurIntense;
-    console.log("blurIntensity: " ,blurIntensity);
+    console.log("blurIntensity: ", blurIntensity);
     // Применяем размытие на области волос
-    const blurredImageData = applyBlur(imageData, width, height, mask, 1, blurIntensity);
+    const blurredImageData = applyBlur(imageData, width, height, mask, 1           , blurIntensity);
+    //                                (imageData, width, height, mask, segmentValue, sigma        , contourWidth   , contourColor, contourOpacity, intensity)
     const uint8Array = new Uint8ClampedArray(blurredImageData.buffer);
     const dataNew = new ImageData(uint8Array, width, height);
     cxt.putImageData(dataNew, 0, 0);

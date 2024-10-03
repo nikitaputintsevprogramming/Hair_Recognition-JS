@@ -65,6 +65,12 @@ limitations under the License. -->
       <span id="blurIntensityValue"></span>
     </div>
 
+    <div class="setting-item"></div>
+      <label for="blurWidth">Blur Width <b>(in dev)</b></label>
+      <input type="range" id="blurWidth" min="0" max="200" value="1" oninput="updateValue('blurWidthValue', this.value)">
+      <span id="blurWidthValue"></span>
+    </div>
+
     <h3>Сегменты для отображения</h3>
     <input type="checkbox" id="showBackground">
     <label for="showBackground">Фон</label><br>
@@ -161,6 +167,7 @@ limitations under the License. -->
       document.getElementById(spanId).textContent = value + (spanId === 'contourOpacityValue' ? ' px' : '');
       document.getElementById(spanId).textContent = value + (spanId === 'hairOpacityValue' ? ' px' : '');
       document.getElementById(spanId).textContent = value + (spanId === 'blurIntensityValue' ? ' px' : '');
+      document.getElementById(spanId).textContent = value + (spanId === 'blurWidthValue' ? ' px' : '');
     }
   </script>
 </body>
