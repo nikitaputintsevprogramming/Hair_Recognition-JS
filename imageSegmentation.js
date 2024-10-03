@@ -148,57 +148,71 @@ function hexToRgb(hex) {
     };
 }
 
-function applyBlur(imageData, width, height, mask, segmentValue, kernelSize) {
+function applyBlur(imageData, width, height, mask, segmentValue, sigma) {
     const blurredImageData = new Uint8ClampedArray(imageData.length);
+    const kernelSize = Math.ceil(sigma * 6); // Размер ядра (обычно 6 * sigma)
     const kernelOffset = Math.floor(kernelSize / 2);
 
-    // Применяем размытие только для сегмента, который не равен segmentValue
+    // Генерация гауссового ядра
+    const gaussianKernel = [];
+    const twoSigmaSq = 2 * sigma * sigma;
+    let sum = 0;
+
+    // Создаем ядро
+    for (let y = -kernelOffset; y <= kernelOffset; y++) {
+        for (let x = -kernelOffset; x <= kernelOffset; x++) {
+            const weight = Math.exp(-(x * x + y * y) / twoSigmaSq);
+            gaussianKernel.push(weight);
+            sum += weight;
+        }
+    }
+
+    // Нормализация ядра
+    for (let i = 0; i < gaussianKernel.length; i++) {
+        gaussianKernel[i] /= sum;
+    }
+
+    // Применение размытия
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
 
-            // Проверяем, если пиксель не относится к области волос
+            // Если пиксель принадлежит сегменту, не размываем его, копируем данные как есть
             if (mask[y * width + x] != segmentValue) {
-                let r = 0, g = 0, b = 0, a = 0;
-                let count = 0;
-
-                // Применяем размытие в окрестностях пикселя
-                for (let ky = -kernelOffset; ky <= kernelOffset; ky++) {
-                    for (let kx = -kernelOffset; kx <= kernelOffset; kx++) {
-                        const nx = x + kx;
-                        const ny = y + ky;
-                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                            const ni = (ny * width + nx) * 4;
-                            if (mask[ny * width + nx] === segmentValue) { // Проверяем, что это также волос
-                                r += imageData[ni];
-                                g += imageData[ni + 1];
-                                b += imageData[ni + 2];
-                                a += imageData[ni + 3];
-                                count++;
-                            }
-                        }
-                    }
-                }
-
-                // Среднее значение по окрестности
-                blurredImageData[i] = count > 0 ? r / count : imageData[i];
-                blurredImageData[i + 1] = count > 0 ? g / count : imageData[i + 1];
-                blurredImageData[i + 2] = count > 0 ? b / count : imageData[i + 2];
-                // blurredImageData[i + 3] = imageData[i + 3]; // Альфа сохраняется
-                // Альфа-канал сохраняется в зависимости от количества найденных пикселей
-                blurredImageData[i + 3] = count > 0 ? a / count : imageData[i + 3]; // сохраняем средний альфа
-                // blurredImageData[i] = imageData[i];
-                // blurredImageData[i + 1] = imageData[i + 1];
-                // blurredImageData[i + 2] = imageData[i + 2];
-                // blurredImageData[i + 3] = imageData[i + 3];
-                
-            } else {
-                // Если пиксель относится к области волос, оставляем его без изменений
-                blurredImageData[i] = imageData[i];
-                blurredImageData[i + 1] = imageData[i + 1];
-                blurredImageData[i + 2] = imageData[i + 2];
-                blurredImageData[i + 3] = imageData[i + 3];
+                blurredImageData[i] = imageData[i];         // R
+                blurredImageData[i + 1] = imageData[i + 1]; // G
+                blurredImageData[i + 2] = imageData[i + 2]; // B
+                blurredImageData[i + 3] = imageData[i + 3]; // A
+                continue;
             }
+
+            let r = 0, g = 0, b = 0, a = 0;
+            let kernelIndex = 0;
+
+            // Применяем ядро к каждому пикселю в окрестностях
+            for (let ky = -kernelOffset; ky <= kernelOffset; ky++) {
+                for (let kx = -kernelOffset; kx <= kernelOffset; kx++) {
+                    const nx = x + kx;
+                    const ny = y + ky;
+                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                        const ni = (ny * width + nx) * 4;
+                        const weight = gaussianKernel[kernelIndex];
+
+                        // Применяем вес только для тех пикселей, которые не принадлежат сегменту
+                        r += imageData[ni] * weight;
+                        g += imageData[ni + 1] * weight;
+                        b += imageData[ni + 2] * weight;
+                        a += imageData[ni + 3] * weight;
+                    }
+                    kernelIndex++;
+                }
+            }
+
+            // Убедимся, что результат размытия остаётся в диапазоне 0-255
+            blurredImageData[i] = Math.min(255, Math.max(0, r));
+            blurredImageData[i + 1] = Math.min(255, Math.max(0, g));
+            blurredImageData[i + 2] = Math.min(255, Math.max(0, b));
+            blurredImageData[i + 3] = Math.min(255, Math.max(0, a));
         }
     }
 
