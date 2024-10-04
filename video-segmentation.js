@@ -85,9 +85,30 @@ function callbackForVideo(result) {
     newCanvas.height = video.videoHeight;
     // NEW END
 
+    const showBackground = document.getElementById("showBackground").checked;
+    const showHair = document.getElementById("showHair").checked;
+    const showBodySkin = document.getElementById("showBodySkin").checked;
+    const showFaceSkin = document.getElementById("showFaceSkin").checked;
+    const showClothes = document.getElementById("showClothes").checked;
+    const showOthers = document.getElementById("showOthers").checked;
+
     // Draw the segmentation result on the new canvas
     for (let i = 0; i < mask.length; ++i) {
         const maskVal = Math.round(mask[i] * 255.0);
+
+        // const segment = mask[i];
+        const segment = Math.round(mask[i] * 255.0);
+        // Фильтрация по чекбоксам
+        if (
+            (segment === 0 && !showBackground) ||
+            (segment === 1 && !showHair) ||
+            (segment === 2 && !showBodySkin) ||
+            (segment === 3 && !showFaceSkin) ||
+            (segment === 4 && !showClothes) ||
+            (segment === 5 && !showOthers)
+        ) {
+            continue; // Пропускаем этот сегмент, если он не выбран
+        }
         const legendColor = legendColors[maskVal % legendColors.length];
        
         imageData[i * 4] = (legendColor[0] + imageData[i * 4]) / 2;
