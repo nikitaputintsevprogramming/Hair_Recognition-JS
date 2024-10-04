@@ -70,9 +70,96 @@ let webcamRunning = false;
 const videoHeight = "360px";
 const videoWidth = "480px";
 
+// Копировка цвета для волос с контура (взаимный цвет)
+document.getElementById('copyHairColor').addEventListener('click', function () {
+    const contourColorInput = document.getElementById('contourColor');
+    const hairColorInput = document.getElementById('hairColor');
+
+    const contourColor = contourColorInput.value; // Получаем выбранный цвет
+
+    // Копируем цвет в буфер обмена
+    navigator.clipboard.writeText(contourColor).then(() => {
+        // alert('Цвет для волос скопирован: ' + contourColor);
+        hairColorInput.value = contourColor; // Устанавливаем цвет контура как цвет волос
+    }).catch(err => {
+        console.error('Ошибка при копировании цвета: ', err);
+    });
+});
+
+// ----------------------------
+
+
+let contourWidth;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const contourInput = document.getElementById("contourWidth");
+    contourWidth = contourInput.valueAsNumber; // Set initial value from slider input
+    console.log("Initial Contour Width:", contourWidth);
+
+    contourInput.addEventListener("input", function () {
+        contourWidth = contourInput.valueAsNumber;
+        console.log("Contour Width updated:", contourWidth);
+    });
+});
+
+// Получаем элементы выбора цвета
+const contourColorInput = document.getElementById("contourColor");
+const hairColorInput = document.getElementById("hairColor");
+
+// Получаем элементы выбора прозрачности
+const contourOpacityInput = document.getElementById("contourOpacity");
+const hairOpacityInput = document.getElementById("hairOpacity");
+
+let blurIntense;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const blurIntenseInput = document.getElementById("blurIntensity");
+    blurIntense = blurIntenseInput.valueAsNumber; // Установка начального значения из ползунка
+    console.log("Initial Blur Intensity:", blurIntense); // Исправлено имя переменной
+
+    // Добавляем обработчик события для изменения интенсивности размытия
+    blurIntenseInput.addEventListener("input", function () {
+        blurIntense = blurIntenseInput.valueAsNumber; // Обновляем значение
+        console.log("Blur Intensity updated:", blurIntense);
+    });
+});
+
+let blurWidthListen;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const blurWidthInput = document.getElementById("blurWidth");
+    blurWidthListen = blurWidthInput.valueAsNumber; // Установка начального значения из ползунка
+    console.log("Initial Blur Width:", blurWidthListen); // Исправлено имя переменной
+
+    // Добавляем обработчик события для изменения интенсивности размытия
+    blurWidthInput.addEventListener("input", function () {
+        blurWidthListen = blurWidthInput.valueAsNumber; // Обновляем значение
+        console.log("Blur Width updated:", blurWidthListen);
+    });
+});
+
+// Функция для преобразования HEX в RGB
+function hexToRgb(hex) {
+    const bigint = parseInt(hex.slice(1), 16);
+    return {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255,
+    };
+}
+
 function callbackForVideo(result) {
     let imageData = canvasCtx.getImageData(0, 0, video.videoWidth, video.videoHeight).data;
     const mask = result.categoryMask.getAsFloat32Array();
+    console.log("Segmentation mask:", mask); // Log the mask for inspection
+
+    let hairCount = 0; // Initialize a count for hair pixels
+    for (let i = 0; i < mask.length; i++) {
+        if (mask[i] === 1) { // Assuming 1 is the hair segment
+            hairCount++;
+        }
+    }
+    console.log("Hair pixels detected:", hairCount); // Log the hair pixel count
     // let j = 0; // OLD
     // NEW 
     const contourWidth = parseInt(document.getElementById("contourWidth").value); // Get the contour width from the slider
@@ -92,6 +179,12 @@ function callbackForVideo(result) {
     const showClothes = document.getElementById("showClothes").checked;
     const showOthers = document.getElementById("showOthers").checked;
 
+    const contourColor = hexToRgb(contourColorInput.value);
+    const hairColor = hexToRgb(hairColorInput.value);
+    const contourOpacity = parseFloat(contourOpacityInput.value);
+    const hairOpacity = parseFloat(hairOpacityInput.value);
+
+
     // Draw the segmentation result on the new canvas
     for (let i = 0; i < mask.length; ++i) {
         const maskVal = Math.round(mask[i] * 255.0);
@@ -110,39 +203,93 @@ function callbackForVideo(result) {
             continue; // Пропускаем этот сегмент, если он не выбран
         }
         const legendColor = legendColors[maskVal % legendColors.length];
-       
+
         imageData[i * 4] = (legendColor[0] + imageData[i * 4]) / 2;
         imageData[i * 4 + 1] = (legendColor[1] + imageData[i * 4 + 1]) / 2;
         imageData[i * 4 + 2] = (legendColor[2] + imageData[i * 4 + 2]) / 2;
         imageData[i * 4 + 3] = (legendColor[3] + imageData[i * 4 + 3]) / 2;
-        
-        // If the current pixel is part of the hair category, draw a contour
-        if (mask[i] === hairColorIndex) {
-            const x = (i % video.videoWidth);
-            const y = Math.floor(i / video.videoWidth);
 
-            // Draw a black contour
-            for (let dx = -contourWidth; dx <= contourWidth; dx++) {
-                for (let dy = -contourWidth; dy <= contourWidth; dy++) {
-                    if (dx !== 0 || dy !== 0) {
-                        const newX = x + dx;
-                        const newY = y + dy;
-                        if (newX >= 0 && newX < video.videoWidth && newY >= 0 && newY < video.videoHeight) {
-                            const idx = (newY * video.videoWidth + newX) * 4;
-                            imageData[idx] = 0;     // Set red channel to 0
-                            imageData[idx + 1] = 0; // Set green channel to 0
-                            imageData[idx + 2] = 0; // Set blue channel to 0
-                            imageData[idx + 3] = 255; // Set alpha channel to fully opaque
+        for (let i = 0; i < mask.length; i++) {
+            if (mask[i] === 1) { // Область волос
+                const x = i % width;
+                const y = Math.floor(i / width);
+                let isEdgePixel = false;
+
+                // Проверяем соседние пиксели
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const neighborIndex = ny * width + nx;
+                            if (mask[neighborIndex] !== 1) { // Если соседний пиксель не волосы
+                                isEdgePixel = true;
+                                break; // Выходим, если нашли хотя бы одного соседнего пикселя, который не является волосами
+                            }
+                        }
+                    }
+                    if (isEdgePixel) break; // Прерываем внешний цикл, если уже нашли крайний пиксель
+                }
+                // Если пиксель является краевым, рисуем контур
+                if (isEdgePixel) {
+                    for (let dw = -contourWidth; dw <= contourWidth; dw++) {
+                        for (let dh = -contourWidth; dh <= contourWidth; dh++) {
+                            const nx = x + dw;
+                            const ny = y + dh;
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                const index = ny * width + nx;
+
+                                // Получаем исходный цвет в контуре
+                                const originalR = imageData[(index * 4)];     // Исходный красный
+                                const originalG = imageData[(index * 4) + 1]; // Исходный зеленый
+                                const originalB = imageData[(index * 4) + 2]; // Исходный синий
+                                const originalA = imageData[(index * 4) + 3]; // Исходная альфа
+
+                                // Смешиваем новый цвет с исходным цветом с учетом прозрачности
+                                // Mixing the new contour color with the original color considering the opacity
+                                imageData[(index * 4)] = (contourColor.r * contourOpacity + originalR * (1 - contourOpacity)); // Red channel
+                                imageData[(index * 4) + 1] = (contourColor.g * contourOpacity + originalG * (1 - contourOpacity)); // Green channel
+                                imageData[(index * 4) + 2] = (contourColor.b * contourOpacity + originalB * (1 - contourOpacity)); // Blue channel
+                                imageData[(index * 4) + 3] = (255 * contourOpacity + originalA * (1 - contourOpacity)); // Alpha channel
+                            }
                         }
                     }
                 }
             }
         }
+
+        // Draw the updated image data back to the canvas
+        const updatedImageData = new ImageData(new Uint8ClampedArray(imageData), width, height);
+        cxt.putImageData(updatedImageData, 0, 0);
+
+
+        // Добавляем цвет для волос с учетом прозрачности
+        for (let i = 0; i < mask.length; i++) {
+            if (mask[i] === 1) { // Область волос
+                const index = i * 4;
+
+                // Получаем исходный цвет волос
+                const originalR = imageData[index];     // Исходный красный
+                const originalG = imageData[index + 1]; // Исходный зеленый
+                const originalB = imageData[index + 2]; // Исходный синий
+                const originalA = imageData[index + 3]; // Исходная альфа
+
+                // Смешиваем новый цвет с исходным цветом с учетом прозрачности
+                imageData[index] = (hairColor.r * hairOpacity + originalR * (1 - hairOpacity)); // R
+                imageData[index + 1] = (hairColor.g * hairOpacity + originalG * (1 - hairOpacity)); // G
+                imageData[index + 2] = (hairColor.b * hairOpacity + originalB * (1 - hairOpacity)); // B
+                imageData[index + 3] = Math.max(0, Math.min(255, originalA * (1 - hairOpacity) + (255 * hairOpacity))); // A
+            }
+        }
     }
+
 
     const uint8Array = new Uint8ClampedArray(imageData.buffer);
     const dataNew = new ImageData(uint8Array, video.videoWidth, video.videoHeight);
     canvasCtx.putImageData(dataNew, 0, 0);
+    // canvasCtx.putImageData(new ImageData(imageData, video.videoWidth, video.videoHeight), 0, 0);
+    // canvasCtx.putImageData(new ImageData(new Uint8ClampedArray(imageData), video.videoWidth, video.videoHeight), 0, 0);
+
 
     if (webcamRunning === true) {
         window.requestAnimationFrame(predictWebcam);

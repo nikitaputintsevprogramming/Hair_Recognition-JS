@@ -129,7 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-
 // Получаем элементы выбора цвета
 const contourColorInput = document.getElementById("contourColor");
 const hairColorInput = document.getElementById("hairColor");
@@ -137,6 +136,36 @@ const hairColorInput = document.getElementById("hairColor");
 // Получаем элементы выбора прозрачности
 const contourOpacityInput = document.getElementById("contourOpacity");
 const hairOpacityInput = document.getElementById("hairOpacity");
+
+let blurIntense;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const blurIntenseInput = document.getElementById("blurIntensity");
+    blurIntense = blurIntenseInput.valueAsNumber; // Установка начального значения из ползунка
+    console.log("Initial Blur Intensity:", blurIntense); // Исправлено имя переменной
+
+    // Добавляем обработчик события для изменения интенсивности размытия
+    blurIntenseInput.addEventListener("input", function () {
+        blurIntense = blurIntenseInput.valueAsNumber; // Обновляем значение
+        console.log("Blur Intensity updated:", blurIntense);
+    });
+});
+
+let blurWidthListen;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const blurWidthInput = document.getElementById("blurWidth");
+    blurWidthListen = blurWidthInput.valueAsNumber; // Установка начального значения из ползунка
+    console.log("Initial Blur Width:", blurWidthListen); // Исправлено имя переменной
+
+    // Добавляем обработчик события для изменения интенсивности размытия
+    blurWidthInput.addEventListener("input", function () {
+        blurWidthListen = blurWidthInput.valueAsNumber; // Обновляем значение
+        console.log("Blur Width updated:", blurWidthListen);
+    });
+});
+
+
 
 // Функция для преобразования HEX в RGB
 function hexToRgb(hex) {
@@ -275,39 +304,6 @@ function applyBlur(imageData, width, height, mask, segmentValue, sigmaKoef, cont
 
     return blurredImageData;
 }
-
-
-
-
-let blurIntense;
-
-document.addEventListener("DOMContentLoaded", () => {
-    const blurIntenseInput = document.getElementById("blurIntensity");
-    blurIntense = blurIntenseInput.valueAsNumber; // Установка начального значения из ползунка
-    console.log("Initial Blur Intensity:", blurIntense); // Исправлено имя переменной
-
-    // Добавляем обработчик события для изменения интенсивности размытия
-    blurIntenseInput.addEventListener("input", function () {
-        blurIntense = blurIntenseInput.valueAsNumber; // Обновляем значение
-        console.log("Blur Intensity updated:", blurIntense);
-    });
-});
-
-let blurWidthListen;
-
-document.addEventListener("DOMContentLoaded", () => {
-    const blurWidthInput = document.getElementById("blurWidth");
-    blurWidthListen = blurWidthInput.valueAsNumber; // Установка начального значения из ползунка
-    console.log("Initial Blur Width:", blurWidthListen); // Исправлено имя переменной
-
-    // Добавляем обработчик события для изменения интенсивности размытия
-    blurWidthInput.addEventListener("input", function () {
-        blurWidthListen = blurWidthInput.valueAsNumber; // Обновляем значение
-        console.log("Blur Width updated:", blurWidthListen);
-    });
-});
-
-
 
 function callback(result) {
     const cxt = canvasClick.getContext("2d");
