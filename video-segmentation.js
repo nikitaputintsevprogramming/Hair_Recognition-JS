@@ -89,22 +89,7 @@ function callbackForVideo(result) {
     for (let i = 0; i < mask.length; ++i) {
         const maskVal = Math.round(mask[i] * 255.0);
         const legendColor = legendColors[maskVal % legendColors.length];
-        // OLD START
-    //     imageData[j] = (legendColor[0] + imageData[j]) / 2;
-    //     imageData[j + 1] = (legendColor[1] + imageData[j + 1]) / 2;
-    //     imageData[j + 2] = (legendColor[2] + imageData[j + 2]) / 2;
-    //     imageData[j + 3] = (legendColor[3] + imageData[j + 3]) / 2;
-    //     j += 4;
-    // }
-    // const uint8Array = new Uint8ClampedArray(imageData.buffer);
-    // const dataNew = new ImageData(uint8Array, video.videoWidth, video.videoHeight);
-    // canvasCtx.putImageData(dataNew, 0, 0);
-    // if (webcamRunning === true) {
-    //     window.requestAnimationFrame(predictWebcam);
-    // }
-    // OLD END
-
-    // NEW START
+       
         imageData[i * 4] = (legendColor[0] + imageData[i * 4]) / 2;
         imageData[i * 4 + 1] = (legendColor[1] + imageData[i * 4 + 1]) / 2;
         imageData[i * 4 + 2] = (legendColor[2] + imageData[i * 4 + 2]) / 2;
