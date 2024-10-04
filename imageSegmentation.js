@@ -274,7 +274,7 @@ function applyBlur(imageData, width, height, mask, segmentValue, sigmaKoef, cont
         for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
 
-            
+
             // Если пиксель является краевым, рисуем контур
             if (mask[y * width + x] !== segmentValue) {
                 for (let dw = -contourWidthBlurEdges; dw <= contourWidthBlurEdges; dw++) {
@@ -400,21 +400,21 @@ function callback(result) {
                             const originalA = imageData[(index * 4) + 3]; // Исходная альфа
 
                             // Смешиваем новый цвет с исходным цветом с учетом прозрачности
-                                      // Mixing the new contour color with the original color considering the opacity
-                                      imageData[(index * 4)] = (contourColor.r * contourOpacity + originalR * (1 - contourOpacity)); // Red channel
-                                      imageData[(index * 4) + 1] = (contourColor.g * contourOpacity + originalG * (1 - contourOpacity)); // Green channel
-                                      imageData[(index * 4) + 2] = (contourColor.b * contourOpacity + originalB * (1 - contourOpacity)); // Blue channel
-                                      imageData[(index * 4) + 3] = (255 * contourOpacity + originalA * (1 - contourOpacity)); // Alpha channel
-                                  }
-                              }
-                          }
-                      }
-                  }
-              }
-          
-              // Draw the updated image data back to the canvas
-              const updatedImageData = new ImageData(new Uint8ClampedArray(imageData), width, height);
-              cxt.putImageData(updatedImageData, 0, 0);
+                            // Mixing the new contour color with the original color considering the opacity
+                            imageData[(index * 4)] = (contourColor.r * contourOpacity + originalR * (1 - contourOpacity)); // Red channel
+                            imageData[(index * 4) + 1] = (contourColor.g * contourOpacity + originalG * (1 - contourOpacity)); // Green channel
+                            imageData[(index * 4) + 2] = (contourColor.b * contourOpacity + originalB * (1 - contourOpacity)); // Blue channel
+                            imageData[(index * 4) + 3] = (255 * contourOpacity + originalA * (1 - contourOpacity)); // Alpha channel
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Draw the updated image data back to the canvas
+    const updatedImageData = new ImageData(new Uint8ClampedArray(imageData), width, height);
+    cxt.putImageData(updatedImageData, 0, 0);
 
     // Добавляем цвет для волос с учетом прозрачности
     for (let i = 0; i < mask.length; i++) {
