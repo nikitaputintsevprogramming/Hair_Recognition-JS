@@ -205,13 +205,15 @@ function callbackForVideo(result) {
         ) {
             continue; // Пропускаем этот сегмент, если он не выбран
         }
+        
         const legendColor = legendColors[maskVal % legendColors.length];
-        console.log("CHECKING", mask);
+        // console.log("CHECKING", mask);
 
         imageData[i * 4] = (legendColor[0] + imageData[i * 4]) / 2;
         imageData[i * 4 + 1] = (legendColor[1] + imageData[i * 4 + 1]) / 2;
         imageData[i * 4 + 2] = (legendColor[2] + imageData[i * 4 + 2]) / 2;
         imageData[i * 4 + 3] = (legendColor[3] + imageData[i * 4 + 3]) / 2;
+        
     }
 
 
@@ -268,9 +270,11 @@ function callbackForVideo(result) {
     const updatedImageData = new ImageData(new Uint8ClampedArray(imageData), video.videoWidth, video.videoHeight);
     // const updatedImageData = new ImageData(new Uint8ClampedArray(imageData), width, height);
     newCtx.putImageData(updatedImageData, 0, 0);
+    // console.log("Mask values:", mask);
 
     // Добавляем цвет для волос с учетом прозрачности
     for (let j = 0; j < mask.length; j++) {
+
         // console.log("Mask values:", mask);
         if (mask[j] != 1) { // Область волос
             const index = j * 4;
@@ -285,6 +289,7 @@ function callbackForVideo(result) {
             // console.log(`Before mixing: originalR=${originalR}, originalG=${originalG}, originalB=${originalB}, hairColor=${JSON.stringify(hairColor)}`);
 
             // Смешиваем новый цвет с исходным цветом с учетом прозрачности
+            const opacity = 1; // Временно устанавливаем на 1 ВРЕМЕННО!!!
             imageData[index] = (hairColor.r * hairOpacity + originalR * (1 - hairOpacity)); // R
             imageData[index + 1] = (hairColor.g * hairOpacity + originalG * (1 - hairOpacity)); // G
             imageData[index + 2] = (hairColor.b * hairOpacity + originalB * (1 - hairOpacity)); // B
