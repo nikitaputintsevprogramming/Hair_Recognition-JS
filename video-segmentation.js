@@ -230,7 +230,7 @@ function callbackForVideo(result) {
                     const ny = y + dy;
                     if (nx >= 0 && nx < video.videoWidth && ny >= 0 && ny < video.videoHeight) {
                         const neighborIndex = ny * video.videoWidth + nx;
-                        if (mask[neighborIndex] !== 1) { // Если соседний пиксель не волосы  // Область волос
+                        if (Math.round(mask[neighborIndex] * 255.0)!== 1) { // Если соседний пиксель не волосы  // Область волос
                             isEdgePixel = true;
                             break; // Выходим, если нашли хотя бы одного соседнего пикселя, который не является волосами
                         }
@@ -290,7 +290,7 @@ function callbackForVideo(result) {
             // console.log(`Before mixing: originalR=${originalR}, originalG=${originalG}, originalB=${originalB}, hairColor=${JSON.stringify(hairColor)}`);
 
             // Смешиваем новый цвет с исходным цветом с учетом прозрачности
-            const opacity = 1; // Временно устанавливаем на 1 ВРЕМЕННО!!!
+            // const opacity = 1; // Временно устанавливаем на 1 ВРЕМЕННО!!!
             imageData[index] = (hairColor.r * hairOpacity + originalR * (1 - hairOpacity)); // R
             imageData[index + 1] = (hairColor.g * hairOpacity + originalG * (1 - hairOpacity)); // G
             imageData[index + 2] = (hairColor.b * hairOpacity + originalB * (1 - hairOpacity)); // B
