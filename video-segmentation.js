@@ -264,9 +264,9 @@ function callbackForVideo(result) {
 
 
         // Добавляем цвет для волос с учетом прозрачности
-        for (let i = 0; i < mask.length; i++) {
-            if (mask[i] === 1) { // Область волос
-                const index = i * 4;
+        for (let j = 0; j < mask.length; j++) {
+            if (mask[j] === 1) { // Область волос
+                const index = j * 4;
 
                 // Получаем исходный цвет волос
                 const originalR = imageData[index];     // Исходный красный
