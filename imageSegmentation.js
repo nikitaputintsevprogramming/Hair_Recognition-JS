@@ -435,7 +435,7 @@ function callback(result) {
         }
     }
     const blurIntensity = blurIntense;
-    console.log("blurIntensity: ", blurIntensity);
+    // console.log("blurIntensity: ", blurIntensity);
     // Применяем размытие на области волос
     const blurredImageData = applyBlur(imageData, width, height, mask, 1, blurIntense, blurWidthListen); // stock
     // const blurredImageData = applyBlur(imageData, width, height, mask, 1, blurIntensity, blurWidthListen);

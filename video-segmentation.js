@@ -33,21 +33,7 @@ const createImageSegmenter = async () => {
     const audio = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm");
     imageSegmenter = await ImageSegmenter.createFromOptions(audio, {
         baseOptions: {
-            // ***Расскоментировать для выбора нужной модели (ниже представлены варианты)***
-            // # https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter#selfie-model *(Selfie segmentation model)*
-            // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite", // *SelfieSegmenter (square)* 
-            // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite", // *SelfieSegmenter (landscape)*
-
-            // https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter#hair-model *(Hair segmentation model)*
-            // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/hair_segmenter/float32/latest/hair_segmenter.tflite", // *HairSegmenter*
-
-            // https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter#multiclass-model *(Multi-class selfie segmentation model)*
             modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite", // *SelfieMulticlass (256 x 256)*
-            // распознает в целом волосы, без пустых мест и обводка с запасом (отступом), точная
-
-            // https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter#deeplab-v3 *(DeepLab-v3 model)*
-            // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/deeplab_v3/float32/latest/deeplab_v3.tflite", // *DeepLab-V3*
-            // распознает в целом волосы, без пусты мест и обводка с запасом (отступом), неточная
             delegate: "GPU"
         },
         runningMode: runningMode,
@@ -86,11 +72,7 @@ document.getElementById('copyHairColor').addEventListener('click', function () {
     });
 });
 
-// ----------------------------
-
-
 let contourWidth;
-
 document.addEventListener("DOMContentLoaded", () => {
     const contourInput = document.getElementById("contourWidth");
     contourWidth = contourInput.valueAsNumber; // Set initial value from slider input
@@ -105,13 +87,11 @@ document.addEventListener("DOMContentLoaded", () => {
 // Получаем элементы выбора цвета
 const contourColorInput = document.getElementById("contourColor");
 const hairColorInput = document.getElementById("hairColor");
-
 // Получаем элементы выбора прозрачности
 const contourOpacityInput = document.getElementById("contourOpacity");
 const hairOpacityInput = document.getElementById("hairOpacity");
 
 let blurIntense;
-
 document.addEventListener("DOMContentLoaded", () => {
     const blurIntenseInput = document.getElementById("blurIntensity");
     blurIntense = blurIntenseInput.valueAsNumber; // Установка начального значения из ползунка
@@ -125,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 let blurWidthListen;
-
 document.addEventListener("DOMContentLoaded", () => {
     const blurWidthInput = document.getElementById("blurWidth");
     blurWidthListen = blurWidthInput.valueAsNumber; // Установка начального значения из ползунка
@@ -151,6 +130,132 @@ function hexToRgb(hex) {
 // const width = canvasElement.width;
 // const height = canvasElement.height;
 
+function applyBlur(imageData, width, height, mask, segmentValue, sigmaKoef, contourWidthBlurValueInHair, contourWidthBlurEdges) { // , contourColor, contourOpacity (contourWidthBlurEdges лучше не трогать, пока не понятно в консоли пишет = undefined)
+    const blurredImageData = new Uint8ClampedArray(imageData.length);
+    const kernelSize = Math.ceil(sigmaKoef * 6); // Размер ядра (обычно 6 * sigmaKoef)
+    const kernelOffset = Math.floor(kernelSize / 2);
+
+    // Генерация гауссового ядра
+    const gaussianKernel = [];
+    const twosigmaKoefSq = 10 * sigmaKoef * sigmaKoef; // чувствительность
+    let sum = 0;
+
+    // Создаем ядро
+    for (let y = -kernelOffset; y <= kernelOffset; y++) {
+        for (let x = -kernelOffset; x <= kernelOffset; x++) {
+            const weight = Math.exp(-(x * x + y * y) / twosigmaKoefSq);
+            gaussianKernel.push(weight);
+            sum += weight;
+        }
+    }
+
+    // Нормализация ядра
+    for (let i = 0; i < gaussianKernel.length; i++) {
+        gaussianKernel[i] /= sum;
+    }
+
+    // Применение размытия
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+
+            // Проверяем, является ли пиксель внутри области волос
+            if ( Math.round(mask[y * width + x] * 255.0) !== segmentValue) {
+                // mask[y * width + x] вместо  Math.round(mask[y * width + x] * 255.0)
+                let isEdgePixel = false;
+                for (let dw = -contourWidthBlurValueInHair; dw <= contourWidthBlurValueInHair; dw++) {
+                    for (let dh = -contourWidthBlurValueInHair; dh <= contourWidthBlurValueInHair; dh++) {
+                        const nx = x + dw;
+                        const ny = y + dh;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height && ( Math.round(mask[ny * width + nx] * 255.0)=== segmentValue)) {
+                            isEdgePixel = true; // Пиксель является краевым
+                            break;
+                        }
+                    }
+                    if (isEdgePixel) break;
+                }
+
+                // Если пиксель является краевым, применяем размытие
+                if (isEdgePixel) {
+                    let r = 0, g = 0, b = 0;
+                    let kernelIndex = 0;
+
+                    // Применяем ядро к каждому пикселю в окрестностях
+                    for (let ky = -kernelOffset; ky <= kernelOffset; ky++) {
+                        for (let kx = -kernelOffset; kx <= kernelOffset; kx++) {
+                            const nx = x + kx;
+                            const ny = y + ky;
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                const ni = (ny * width + nx) * 4;
+                                const weight = gaussianKernel[kernelIndex];
+
+                                // Суммируем цвет с учетом веса
+                                r += imageData[ni] * weight;
+                                g += imageData[ni + 1] * weight;
+                                b += imageData[ni + 2] * weight;
+                            }
+                            kernelIndex++;
+                        }
+                    }
+
+                    // Убедимся, что результат размытия остаётся в диапазоне 0-255
+                    blurredImageData[i] = Math.min(255, Math.max(0, r));
+                    blurredImageData[i + 1] = Math.min(255, Math.max(0, g));
+                    blurredImageData[i + 2] = Math.min(255, Math.max(0, b));
+                    blurredImageData[i + 3] = imageData[i + 3]; // Сохраняем альфа-канал
+                } else {
+                    // Если не краевой, просто копируем цвет
+                    blurredImageData[i] = imageData[i];         // R
+                    blurredImageData[i + 1] = imageData[i + 1]; // G
+                    blurredImageData[i + 2] = imageData[i + 2]; // B
+                    blurredImageData[i + 3] = imageData[i + 3]; // A
+                }
+            } else {
+                // Если пиксель принадлежит сегменту, просто копируем цвет
+                blurredImageData[i] = imageData[i];         // R
+                blurredImageData[i + 1] = imageData[i + 1]; // G
+                blurredImageData[i + 2] = imageData[i + 2]; // B
+                blurredImageData[i + 3] = imageData[i + 3]; // A
+            }
+        }
+    }
+
+    // Наносим контур на края
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+
+            // Если пиксель является краевым, рисуем контур
+            if (Math.round(mask[y * width + x] * 255.0) !== segmentValue) {
+                // mask[y * width + x] вместо  Math.round(mask[y * width + x] * 255.0) 
+                for (let dw = -contourWidthBlurEdges; dw <= contourWidthBlurEdges; dw++) {
+                    for (let dh = -contourWidthBlurEdges; dh <= contourWidthBlurEdges; dh++) {
+                        const nx = x + dw;
+                        const ny = y + dh;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const index = (ny * width + nx) * 4;
+
+                            // Получаем исходный цвет в контуре
+                            const originalR = blurredImageData[index];     // Исходный красный
+                            const originalG = blurredImageData[index + 1]; // Исходный зеленый
+                            const originalB = blurredImageData[index + 2]; // Исходный синий
+                            const originalA = blurredImageData[index + 3]; // Исходная альфа
+
+                            // Смешиваем новый цвет с исходным цветом с учетом прозрачности
+                            blurredImageData[index] = (contourColor.r * contourOpacity + originalR * (1 - contourOpacity)); // Red channel
+                            blurredImageData[index + 1] = (contourColor.g * contourOpacity + originalG * (1 - contourOpacity)); // Green channel
+                            blurredImageData[index + 2] = (contourColor.b * contourOpacity + originalB * (1 - contourOpacity)); // Blue channel
+                            blurredImageData[index + 3] = (255 * contourOpacity + originalA * (1 - contourOpacity)); // Alpha channel
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return blurredImageData;
+}
+
 function callbackForVideo(result) {
     let imageData = canvasCtx.getImageData(0, 0, video.videoWidth, video.videoHeight).data;
     const mask = result.categoryMask.getAsFloat32Array();
@@ -158,13 +263,10 @@ function callbackForVideo(result) {
 
     let hairCount = 0; // Initialize a count for hair pixels
     for (let i = 0; i < mask.length; i++) {
-        if (mask[i] === 1) { // Assuming 1 is the hair segment
+        if (Math.round(mask[i] * 255.0) === 1) { // Assuming 1 is the hair segment
             hairCount++;
         }
     }
-    // console.log("Hair pixels detected:", hairCount); // Log the hair pixel count
-    // let j = 0; // OLD
-    // NEW 
     const contourWidth = parseInt(document.getElementById("contourWidth").value); // Get the contour width from the slider
     const hairColorIndex = 1; // Hair category index
 
@@ -186,7 +288,6 @@ function callbackForVideo(result) {
     const hairColor = hexToRgb(hairColorInput.value);
     const contourOpacity = parseFloat(contourOpacityInput.value);
     const hairOpacity = parseFloat(hairOpacityInput.value);
-
 
     // Draw the segmentation result on the new canvas
     for (let i = 0; i < mask.length; ++i) {
@@ -297,14 +398,13 @@ function callbackForVideo(result) {
             imageData[index + 3] = Math.max(0, Math.min(255, originalA * (1 - hairOpacity) + (255 * hairOpacity))); // A
         }
     }
+    const blurIntensity = blurIntense;
+    const blurredImageData = applyBlur(imageData, video.videoWidth, video.videoHeight, mask, 1, blurIntense, blurWidthListen);
 
-
-    const uint8Array = new Uint8ClampedArray(imageData.buffer);
+    // const uint8Array = new Uint8ClampedArray(imageData.buffer);
+    const uint8Array = new Uint8ClampedArray(blurredImageData);
     const dataNew = new ImageData(uint8Array, video.videoWidth, video.videoHeight);
     canvasCtx.putImageData(dataNew, 0, 0);
-    // canvasCtx.putImageData(new ImageData(imageData, video.videoWidth, video.videoHeight), 0, 0);
-    // canvasCtx.putImageData(new ImageData(new Uint8ClampedArray(imageData), video.videoWidth, video.videoHeight), 0, 0);
-
 
     if (webcamRunning === true) {
         window.requestAnimationFrame(predictWebcam);
