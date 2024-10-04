@@ -38,19 +38,19 @@ limitations under the License. -->
 
     <div class="setting-item">
       <label for="contourColor">Цвет контура (RGB):</label>
-      <input type="color" id="contourColor" value="#126570">
+      <input type="color" id="contourColor" value="#ff2d00">
       <button id="copyHairColor">Копировать цвет для волос</button>
     </div>
 
     <div class="setting-item">
       <label for="hairColor">Цвет волос (RGB):</label>
-      <input type="color" id="hairColor" value="#825A90"> <!-- Выбранный по умолчанию цвет для волос -->
+      <input type="color" id="hairColor" value="#0004ff"> <!-- Выбранный по умолчанию цвет для волос -->
     </div>
 
     <div class="setting-item">
       <label for="contourOpacity">Прозрачность контура:</label>
-      <input type="range" id="contourOpacity" min="0" max="1" step="0.001" value="3" oninput="updateValue('contourOpacityValue', this.value)" >
-      <span id="contourOpacityValue"></span> // "0.003"
+      <input type="range" id="contourOpacity" min="0" max="1" step="0.001" value="0.3" oninput="updateValue('contourOpacityValue', this.value)" >
+      <span id="contourOpacityValue"></span> <!-- "0.003" STOCK -->
     </div>
 
     <div class="setting-item">

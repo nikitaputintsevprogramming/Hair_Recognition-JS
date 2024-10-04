@@ -218,7 +218,7 @@ function callbackForVideo(result) {
 
     // Контур
     for (let i = 0; i < mask.length; i++) {
-        if (Math.round(mask[i] * 255.0) == 1) { // Область волос
+        if (Math.round(mask[i] * 255.0) === 1) { // Область волос
             const x = i % video.videoWidth;
             const y = Math.floor(i / video.videoWidth);
             let isEdgePixel = false;
@@ -230,7 +230,7 @@ function callbackForVideo(result) {
                     const ny = y + dy;
                     if (nx >= 0 && nx < video.videoWidth && ny >= 0 && ny < video.videoHeight) {
                         const neighborIndex = ny * video.videoWidth + nx;
-                        if (mask[neighborIndex] != 1) { // Если соседний пиксель не волосы  // Область волос
+                        if (mask[neighborIndex] !== 1) { // Если соседний пиксель не волосы  // Область волос
                             isEdgePixel = true;
                             break; // Выходим, если нашли хотя бы одного соседнего пикселя, который не является волосами
                         }
