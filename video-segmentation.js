@@ -216,11 +216,11 @@ function callbackForVideo(result) {
         
     }
 
-
+    // Контур
     for (let i = 0; i < mask.length; i++) {
-        if (mask[i] === 1) { // Область волос
-            const x = i % width;
-            const y = Math.floor(i / width);
+        if (Math.round(mask[i] * 255.0) == 1) { // Область волос
+            const x = i % video.videoWidth;
+            const y = Math.floor(i / video.videoWidth);
             let isEdgePixel = false;
 
             // Проверяем соседние пиксели
@@ -228,9 +228,9 @@ function callbackForVideo(result) {
                 for (let dy = -1; dy <= 1; dy++) {
                     const nx = x + dx;
                     const ny = y + dy;
-                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                        const neighborIndex = ny * width + nx;
-                        if (mask[neighborIndex] !== 1) { // Если соседний пиксель не волосы
+                    if (nx >= 0 && nx < video.videoWidth && ny >= 0 && ny < video.videoHeight) {
+                        const neighborIndex = ny * video.videoWidth + nx;
+                        if (mask[neighborIndex] != 1) { // Если соседний пиксель не волосы  // Область волос
                             isEdgePixel = true;
                             break; // Выходим, если нашли хотя бы одного соседнего пикселя, который не является волосами
                         }
@@ -244,8 +244,8 @@ function callbackForVideo(result) {
                     for (let dh = -contourWidth; dh <= contourWidth; dh++) {
                         const nx = x + dw;
                         const ny = y + dh;
-                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                            const index = ny * width + nx;
+                        if (nx >= 0 && nx < video.videoWidth && ny >= 0 && ny < video.videoHeight) {
+                            const index = ny * video.videoWidth + nx;
 
                             // Получаем исходный цвет в контуре
                             const originalR = imageData[(index * 4)];     // Исходный красный
@@ -272,11 +272,12 @@ function callbackForVideo(result) {
     newCtx.putImageData(updatedImageData, 0, 0);
     // console.log("Mask values:", mask);
 
+    // вся область волос
     // Добавляем цвет для волос с учетом прозрачности
     for (let j = 0; j < mask.length; j++) {
-
+        // console.log(mask[j] ); // постоянно выводит 0 !!!
         // console.log("Mask values:", mask);
-        if (mask[j] != 1) { // Область волос
+        if (Math.round(mask[j] * 255.0) == 1) { // Область волос
             const index = j * 4;
 
             // Получаем исходный цвет волос
