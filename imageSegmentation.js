@@ -114,56 +114,18 @@ document.getElementById('copyHairColor').addEventListener('click', function () {
 });
 
 // ----------------------------
+let contourWidth = 1.05,
+    contourOpacityInput = 0.01,
+    hairOpacityInput = 0.4,
+    blurIntense = 0.001,
+    blurWidthListen = 2;
 
-
-let contourWidth;
-
-document.addEventListener("DOMContentLoaded", () => {
-    const contourInput = document.getElementById("contourWidth");
-    contourWidth = contourInput.valueAsNumber; // Set initial value from slider input
-    console.log("Initial Contour Width:", contourWidth);
-
-    contourInput.addEventListener("input", function () {
-        contourWidth = contourInput.valueAsNumber;
-        console.log("Contour Width updated:", contourWidth);
-    });
-});
 
 // Получаем элементы выбора цвета
 const contourColorInput = document.getElementById("contourColor");
 const hairColorInput = document.getElementById("hairColor");
 
 // Получаем элементы выбора прозрачности
-const contourOpacityInput = document.getElementById("contourOpacity");
-const hairOpacityInput = document.getElementById("hairOpacity");
-
-let blurIntense;
-
-document.addEventListener("DOMContentLoaded", () => {
-    const blurIntenseInput = document.getElementById("blurIntensity");
-    blurIntense = blurIntenseInput.valueAsNumber; // Установка начального значения из ползунка
-    console.log("Initial Blur Intensity:", blurIntense); // Исправлено имя переменной
-
-    // Добавляем обработчик события для изменения интенсивности размытия
-    blurIntenseInput.addEventListener("input", function () {
-        blurIntense = blurIntenseInput.valueAsNumber; // Обновляем значение
-        console.log("Blur Intensity updated:", blurIntense);
-    });
-});
-
-let blurWidthListen;
-
-document.addEventListener("DOMContentLoaded", () => {
-    const blurWidthInput = document.getElementById("blurWidth");
-    blurWidthListen = blurWidthInput.valueAsNumber; // Установка начального значения из ползунка
-    console.log("Initial Blur Width:", blurWidthListen); // Исправлено имя переменной
-
-    // Добавляем обработчик события для изменения интенсивности размытия
-    blurWidthInput.addEventListener("input", function () {
-        blurWidthListen = blurWidthInput.valueAsNumber; // Обновляем значение
-        console.log("Blur Width updated:", blurWidthListen);
-    });
-});
 
 
 
@@ -317,12 +279,12 @@ function callback(result) {
     // NEW START
     // Получаем значение ширины контура из ползунка
 
-    const showBackground = document.getElementById("showBackground").checked;
-    const showHair = document.getElementById("showHair").checked;
-    const showBodySkin = document.getElementById("showBodySkin").checked;
-    const showFaceSkin = document.getElementById("showFaceSkin").checked;
-    const showClothes = document.getElementById("showClothes").checked;
-    const showOthers = document.getElementById("showOthers").checked;
+    const showBackground = false;
+    const showHair = true;
+    const showBodySkin = false;
+    const showFaceSkin = false;
+    const showClothes = false;
+    const showOthers = false;
 
     // NEW END
 
@@ -335,8 +297,8 @@ function callback(result) {
     // Получаем значения цвета и прозрачности из элементов выбора
     const contourColor = hexToRgb(contourColorInput.value);
     const hairColor = hexToRgb(hairColorInput.value);
-    const contourOpacity = parseFloat(contourOpacityInput.value);
-    const hairOpacity = parseFloat(hairOpacityInput.value);
+    const contourOpacity = parseFloat(contourOpacityInput);
+    const hairOpacity = parseFloat(hairOpacityInput);
 
     for (let i in mask) {
         if (mask[i] > 0) {
@@ -445,5 +407,39 @@ function callback(result) {
     cxt.putImageData(dataNew, 0, 0);
 }
 
+document.getElementById('fileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Создание нового элемента для загруженного изображения
+            const newSegmentDiv = document.createElement('div');
+            newSegmentDiv.classList.add('segmentOnClick');
 
+            // Создание элемента <canvas>
+            const newCanvas = document.createElement('canvas');
+            newCanvas.classList.add('removed');
+            newCanvas.width = 300; // Задаём ширину canvas
+            newCanvas.height = 200; // Задаём высоту canvas
+
+            // Создание элемента <img> для отображения загруженного изображения
+            const newImage = document.createElement('img');
+            newImage.src = e.target.result;
+            newImage.title = 'Click to get segmentation!';
+            newImage.style.width = '300px'; // Ширина изображения, можно изменить
+
+            // Добавление обработчика клика для нового изображения
+            newImage.addEventListener('click', handleClick);
+
+            // Добавление canvas и изображения в новый блок div
+            newSegmentDiv.appendChild(newCanvas);
+            newSegmentDiv.appendChild(newImage);
+
+            // Добавление нового блока с изображением в раздел "demos"
+            const container = document.getElementById('uploadedImageContainer');
+            container.appendChild(newSegmentDiv);
+        };
+        reader.readAsDataURL(file);
+    }
+});
 

@@ -56,6 +56,13 @@ let webcamRunning = false;
 const videoHeight = "360px";
 const videoWidth = "480px";
 
+let contourWidth = 1.05,
+    contourOpacityInput = 0.01,
+    hairOpacityInput = 0.4,
+    blurIntense = 0.001,
+    blurWidthListen = 2;
+
+
 // Копировка цвета для волос с контура (взаимный цвет)
 document.getElementById('copyHairColor').addEventListener('click', function () {
     const contourColorInput = document.getElementById('contourColor');
@@ -72,50 +79,10 @@ document.getElementById('copyHairColor').addEventListener('click', function () {
     });
 });
 
-let contourWidth;
-document.addEventListener("DOMContentLoaded", () => {
-    const contourInput = document.getElementById("contourWidth");
-    contourWidth = contourInput.valueAsNumber; // Set initial value from slider input
-    console.log("Initial Contour Width:", contourWidth);
-
-    contourInput.addEventListener("input", function () {
-        contourWidth = contourInput.valueAsNumber;
-        console.log("Contour Width updated:", contourWidth);
-    });
-});
 
 // Получаем элементы выбора цвета
 const contourColorInput = document.getElementById("contourColor");
 const hairColorInput = document.getElementById("hairColor");
-// Получаем элементы выбора прозрачности
-const contourOpacityInput = document.getElementById("contourOpacity");
-const hairOpacityInput = document.getElementById("hairOpacity");
-
-let blurIntense;
-document.addEventListener("DOMContentLoaded", () => {
-    const blurIntenseInput = document.getElementById("blurIntensity");
-    blurIntense = blurIntenseInput.valueAsNumber; // Установка начального значения из ползунка
-    console.log("Initial Blur Intensity:", blurIntense); // Исправлено имя переменной
-
-    // Добавляем обработчик события для изменения интенсивности размытия
-    blurIntenseInput.addEventListener("input", function () {
-        blurIntense = blurIntenseInput.valueAsNumber; // Обновляем значение
-        console.log("Blur Intensity updated:", blurIntense);
-    });
-});
-
-let blurWidthListen;
-document.addEventListener("DOMContentLoaded", () => {
-    const blurWidthInput = document.getElementById("blurWidth");
-    blurWidthListen = blurWidthInput.valueAsNumber; // Установка начального значения из ползунка
-    console.log("Initial Blur Width:", blurWidthListen); // Исправлено имя переменной
-
-    // Добавляем обработчик события для изменения интенсивности размытия
-    blurWidthInput.addEventListener("input", function () {
-        blurWidthListen = blurWidthInput.valueAsNumber; // Обновляем значение
-        console.log("Blur Width updated:", blurWidthListen);
-    });
-});
 
 // Функция для преобразования HEX в RGB
 function hexToRgb(hex) {
@@ -267,7 +234,6 @@ function callbackForVideo(result) {
             hairCount++;
         }
     }
-    const contourWidth = parseInt(document.getElementById("contourWidth").value); // Get the contour width from the slider
     const hairColorIndex = 1; // Hair category index
 
     // Create a new ImageData for drawing the contours
@@ -277,17 +243,18 @@ function callbackForVideo(result) {
     newCanvas.height = video.videoHeight;
     // NEW END
 
-    const showBackground = document.getElementById("showBackground").checked;
-    const showHair = document.getElementById("showHair").checked;
-    const showBodySkin = document.getElementById("showBodySkin").checked;
-    const showFaceSkin = document.getElementById("showFaceSkin").checked;
-    const showClothes = document.getElementById("showClothes").checked;
-    const showOthers = document.getElementById("showOthers").checked;
+    const showBackground = false;
+    const showHair = true;
+    const showBodySkin = false;
+    const showFaceSkin = false;
+    const showClothes = false;
+    const showOthers = false;
+
 
     const contourColor = hexToRgb(contourColorInput.value);
     const hairColor = hexToRgb(hairColorInput.value);
-    const contourOpacity = parseFloat(contourOpacityInput.value);
-    const hairOpacity = parseFloat(hairOpacityInput.value);
+    const contourOpacity = parseFloat(contourOpacityInput);
+    const hairOpacity = parseFloat(hairOpacityInput);
 
     // Draw the segmentation result on the new canvas
     for (let i = 0; i < mask.length; ++i) {

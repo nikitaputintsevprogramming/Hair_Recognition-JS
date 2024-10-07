@@ -27,15 +27,8 @@ limitations under the License. -->
   <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
   <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 
-  <h1>Segmenting images using the MediaPipe Image Segmentation Task</h1>
   <div class="settings-block">
     <h2>Настройки сегментации</h2>
-    <div class="setting-item">
-      <label for="contourWidth">Ширина контура (px):</label>
-      <input type="range" id="contourWidth" min="1" max="50" value="2" oninput="updateValue('contourWidthValue', this.value)">
-      <span id="contourWidthValue"></span>
-    </div>
-
     <div class="setting-item">
       <label for="contourColor">Цвет контура (RGB):</label>
       <input type="color" id="contourColor" value="#ff2d00">
@@ -46,76 +39,23 @@ limitations under the License. -->
       <label for="hairColor">Цвет волос (RGB):</label>
       <input type="color" id="hairColor" value="#0004ff"> <!-- Выбранный по умолчанию цвет для волос -->
     </div>
-
-    <div class="setting-item">
-      <label for="contourOpacity">Прозрачность контура:</label>
-      <input type="range" id="contourOpacity" min="0" max="1" step="0.001" value="0.3" oninput="updateValue('contourOpacityValue', this.value)" >
-      <span id="contourOpacityValue"></span> <!-- "0.003" STOCK -->
-    </div>
-
-    <div class="setting-item">
-      <label for="hairOpacity">Прозрачность волос:</label>
-      <input type="range" id="hairOpacity" min="0" max="1" step="0.01" value="0.4" oninput="updateValue('hairOpacityValue', this.value)">
-      <span id="hairOpacityValue"></span>
-    </div>
-
-    <div class="setting-item">
-      <label for="blurIntensity">Blur Intensity <b>(in dev)</b></label>
-      <input type="range" id="blurIntensity" min="1" max="5" step="0.001" value="1" oninput="updateValue('blurIntensityValue', this.value)">
-      <span id="blurIntensityValue"></span>
-    </div>
-
-    <div class="setting-item"></div>
-      <label for="blurWidth">Blur Width <b>(in dev)</b></label>
-      <input type="range" id="blurWidth" min="0" max="200" value="20" oninput="updateValue('blurWidthValue', this.value)">
-      <span id="blurWidthValue"></span>
-    </div>
-
-    <h3>Сегменты для отображения</h3>
-    <input type="checkbox" id="showBackground">
-    <label for="showBackground">Фон</label><br>
-    <input type="checkbox" id="showHair">
-    <label for="showHair">Волосы</label><br>
-    <input type="checkbox" id="showBodySkin">
-    <label for="showBodySkin">Кожа тела</label><br>
-    <input type="checkbox" id="showFaceSkin">
-    <label for="showFaceSkin">Кожа лица</label><br>
-    <input type="checkbox" id="showClothes">
-    <label for="showClothes">Одежда</label><br>
-    <input type="checkbox" id="showOthers"> <!-- checked -->
-    <label for="showOthers">Прочее (аксессуары)</label><br>
   </div>
 
 
 
   <section id="demos" class="invisible">
-    <h2>Demo: Segmenting Images</h2>
-    <p><b>Click on an image below</b> to see its Segmentation.</p>
-    <div class="segmentOnClick">
-      <canvas class="removed"></canvas>
-      <img src="images/women1.jpg" crossorigin="anonymous" title="Click to get segmentation!" />
-      <p class="classification removed">
-    </div>
-    <div class="segmentOnClick">
-      <canvas class="removed"></canvas>
-      <img src="images/women2.jpg" crossorigin="anonymous" title="Click to get segmentation!" />
-      <p class="classification removed">
-    </div>
-    <div class="segmentOnClick">
-      <canvas class="removed"></canvas>
-      <img src="images/women3.jpg" crossorigin="anonymous" title="Click to get segmentation!" />
-      <p class="classification removed">
-    </div>
-    <div class="segmentOnClick">
-      <canvas class="removed"></canvas>
-      <img src="images/women4.jpg" crossorigin="anonymous" title="Click to get segmentation!" />
-      <p class="classification removed">
-    </div>
-    <div class="segmentOnClick">
-      <canvas class="removed"></canvas>
-      <img src="images/women5.jpg" crossorigin="anonymous" title="Click to get segmentation!" />
-      <p class="classification removed">
-    </div>
+    <h2>Загрузите фотографию</h2>
+      <input type="file" id="fileInput" accept="image/*" />
+      <div id="preview">
+        <img
+          id="previewImg"
+          src=""
+          alt="Предпросмотр"
+          style="display: none; width: 300px; height: 800px;"
+        />
+      </div>
+
+      <div id="uploadedImageContainer"></div>
 
     <!-- ----------------------------------------------------- -->
     <!-- WEMCAB REAL-TIME -->
